@@ -1,1 +1,1 @@
-web: gunicorn uts_cargo.wsgi
+web: gunicorn core.wsgi
