@@ -1,0 +1,1 @@
+web: gunicorn uts_cargo.wsgi
