@@ -5,6 +5,8 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export import resources, fields
 from import_export.widgets import ForeignKeyWidget
 from import_export.admin import ImportExportModelAdmin
+
+from accounts.forms import MyUserCreationForm
 from .models import Cargo, WarehouseCargo, OnWayCargo, ArrivedCargo, DeliveredCargo, SupportMessage
 from accounts.models import User
 
@@ -93,7 +95,7 @@ class MyUserAdmin(BaseUserAdmin):
     search_fields = ('user_id', 'phone', 'first_name')
 
     # MUHIM: user_id ni readonly_fields ga qo'shish kerak
-    readonly_fields = ('date_joined', 'last_login', 'first_name', 'last_name', 'phone', 'user_id', 'jshshir', 'passport_series', 'birth_date')
+    readonly_fields = ('date_joined', 'last_login', 'user_id',)
 
     ordering = ('id',)
 
@@ -103,6 +105,22 @@ class MyUserAdmin(BaseUserAdmin):
         ('Huquqlar', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
         ('Muhim sanalar', {'fields': ('last_login', 'date_joined')}),
     )
+
+    add_form = MyUserCreationForm
+    # 2. YANGI FOYDALANUVCHI QO'SHISH UCHUN (Add form)
+    # Bu qism 'username' xatoligini yo'qotadi
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('phone', 'user_id', 'first_name', 'last_name', 'is_staff', 'password'),
+        }),
+    )
+
+    # get_form metodini ham biroz to'g'rilaymiz
+    def get_form(self, request, obj=None, **kwargs):
+        if obj is None:
+            kwargs['form'] = self.add_form
+        return super().get_form(request, obj, **kwargs)
 
 
 # ==========================================

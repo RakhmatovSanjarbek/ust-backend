@@ -15,7 +15,7 @@ from .serializers import UserSerializer, UserUpdateSerializer
 def signin_request(request):
     phone = request.data.get('phone')
     if not phone:
-        return Response({"error": "Telefon raqam kiritilmadi"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message": "Telefon raqam kiritilmadi"}, status=status.HTTP_400_BAD_REQUEST)
 
     # Telefon raqamni tozalash
     phone = "".join(filter(str.isdigit, str(phone)))
@@ -30,21 +30,12 @@ def signin_request(request):
         # OTPCode modeliga saqlash
         OTPCode.objects.create(user=user, code=otp_code)
 
-        # Terminalga chiqarish (Siz uchun)
-        print("\n" + "=" * 50)
-        print(f"SMS TASDIQLASH KODI: {otp_code}")
-        print(f"FOYDALANUVCHI: {user.phone} ({user.first_name})")
-        print("=" * 50 + "\n")
 
         return Response({
-            "status": "success",
-            "message": "Tasdiqlash kodi yuborildi. Uni terminaldan oling.",
-            "phone": user.phone
+            "message": "Tasdiqlash kodi yuborildi.",
         }, status=status.HTTP_200_OK)
 
     return Response({
-        "status": "error",
-        "error": "Foydalanuvchi topilmadi",
         "message": "Bu raqam bazada mavjud emas. Avval ro'yxatdan o'ting."
     }, status=status.HTTP_404_NOT_FOUND)
 
@@ -57,7 +48,7 @@ def verify_otp(request):
     otp_code = request.data.get('otp_code', None)
 
     if not phone or not otp_code:
-        return Response({"error": "Telefon yoki kod kiritilmadi"}, status=400)
+        return Response({"message": "Telefon yoki kod kiritilmadi"}, status=400)
 
     phone = "".join(filter(str.isdigit, str(phone)))
 
@@ -81,10 +72,10 @@ def verify_otp(request):
 
         return Response({
             "message": "Muvaffaqiyatli kirdingiz",
-            "access": access_token
+            "token": access_token
         }, status=200)
 
-    return Response({"error": "Kod noto'g'ri yoki muddati o'tgan"}, status=400)
+    return Response({"message": "Kod noto'g'ri yoki muddati o'tgan"}, status=400)
 # 3. Ro'yxatdan o'tish (Signup)
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -98,12 +89,8 @@ def signup(request):
         otp_code = str(random.randint(100000, 999999))
         OTPCode.objects.create(user=user, code=otp_code)
 
-        print(f"\n! YANGI RO'YXATDAN O'TISH: {user.phone} | KOD: {otp_code} !\n")
-
         return Response({
-            "status": "success",
             "message": "Kod yuborildi. Tasdiqlagandan so'ng hisobingiz faollashadi.",
-            "phone": user.phone
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # 4. Foydalanuvchi ma'lumotlarini olish (Me)
