@@ -111,11 +111,38 @@ class MyUserAdmin(BaseUserAdmin):
 
 class BaseCargoAdmin(ImportExportModelAdmin):
     resource_class = CargoResource
-    list_display = ('track_code', 'display_uts_id', 'colored_status', 'created_at')
+    list_display = ('track_code', 'display_uts_id', 'colored_status', 'get_responsible_admin', 'created_at')
     search_fields = ('track_code', 'user__user_id', 'user__phone')
     autocomplete_fields = ['user']
-    readonly_fields = ('created_by', 'updated_by', 'delivered_at')
+    readonly_fields = (
+    'created_by', 'updated_by', 'delivered_at', 'warehouse_admin', 'onway_admin', 'arrived_admin', 'delivered_admin')
     list_per_page = 50
+
+    def get_responsible_admin(self, obj):
+        """Statusga qarab mas'ul adminni aniqlash"""
+        if obj.status == 'Topshirildi': return obj.delivered_admin
+        if obj.status == 'Punktda': return obj.arrived_admin
+        if obj.status == 'Yo\'lda': return obj.onway_admin
+        return obj.warehouse_admin
+
+    get_responsible_admin.short_description = "Mas'ul xodim"
+
+    def save_model(self, request, obj, form, change):
+        """Yangi yuk qo'shilganda yoki status o'zgarganda adminni biriktirish"""
+        if not change:
+            obj.created_by = request.user
+            # Agar birinchi marta 'Omborda' statusi bilan yaratilsa
+            if obj.status == 'Omborda':
+                obj.warehouse_admin = request.user
+        else:
+            # Status tahrirlanganda tegishli adminni saqlash
+            if 'status' in form.changed_data:
+                if obj.status == 'Yo\'lda': obj.onway_admin = request.user
+                if obj.status == 'Punktda': obj.arrived_admin = request.user
+                if obj.status == 'Topshirildi': obj.delivered_admin = request.user
+
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
     def colored_status(self, obj):
         colors = {
@@ -155,12 +182,6 @@ class BaseCargoAdmin(ImportExportModelAdmin):
             'admin/js/cargo_scanner.js',
         )
 
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
 
 # Registratsiyalar
 @admin.register(Cargo)
@@ -177,7 +198,12 @@ class WarehouseCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="Tanlanganlarni 'Yo'lga' chiqarish")
     def send_to_way(self, request, queryset):
-        queryset.update(status='Yo\'lda', updated_by=request.user)
+        # Update o'rniga har birini save qilish adminni saqlashni kafolatlaydi
+        for cargo in queryset:
+            cargo.status = 'Yo\'lda'
+            cargo.onway_admin = request.user
+            cargo.updated_by = request.user
+            cargo.save()
 
 
 @admin.register(OnWayCargo)
@@ -189,7 +215,11 @@ class OnWayCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="Tanlanganlarni 'Punktga keldi' deb belgilash")
     def mark_as_arrived(self, request, queryset):
-        queryset.update(status='Punktda', updated_by=request.user)
+        for cargo in queryset:
+            cargo.status = 'Punktda'
+            cargo.arrived_admin = request.user
+            cargo.updated_by = request.user
+            cargo.save()
 
 
 @admin.register(ArrivedCargo)
@@ -201,7 +231,12 @@ class ArrivedCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="✅ TOPSHIRISHNI TASDIQLASH")
     def confirm_delivery(self, request, queryset):
-        queryset.update(status='Topshirildi', delivered_at=timezone.now(), updated_by=request.user)
+        for cargo in queryset:
+            cargo.status = 'Topshirildi'
+            cargo.delivered_at = timezone.now()
+            cargo.delivered_admin = request.user
+            cargo.updated_by = request.user
+            cargo.save()
 
 
 @admin.register(DeliveredCargo)

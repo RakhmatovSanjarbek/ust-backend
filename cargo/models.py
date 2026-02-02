@@ -20,6 +20,16 @@ class Cargo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Oxirgi o'zgarish")
     delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="Topshirilgan vaqt")
 
+    # Yangi kuzatuv maydonlari
+    warehouse_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='warehouse_actions', verbose_name="Ombor admini")
+    onway_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='onway_actions', verbose_name="Yo'lga chiqargan")
+    arrived_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                      related_name='arrived_actions', verbose_name="Punktga qabul qilgan")
+    delivered_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                        related_name='delivery_actions', verbose_name="Topshirgan admin")
+
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
