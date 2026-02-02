@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import User, OTPCode
-from .serializers import UserSerializer, UserUpdateSerializer
+from .serializers import UserSerializer, UserSerializer
 
 
 # 1. Tizimga kirish (OTP kod yaratish)
@@ -77,22 +77,34 @@ def verify_otp(request):
 
     return Response({"message": "Kod noto'g'ri yoki muddati o'tgan"}, status=400)
 # 3. Ro'yxatdan o'tish (Signup)
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
     serializer = UserSerializer(data=request.data)
+
     if serializer.is_valid():
-        # Foydalanuvchini yaratamiz lekin is_active=False qilamiz
+        # Ma'lumotlar to'liq va to'g'ri bo'lsa saqlaymiz
         user = serializer.save(is_active=False)
 
         # OTP yaratish
         otp_code = str(random.randint(100000, 999999))
         OTPCode.objects.create(user=user, code=otp_code)
 
+        # Test uchun konsolga chiqarish
+        print(f"DEBUG: OTP for {user.phone}: {otp_code}")
+
         return Response({
-            "message": "Kod yuborildi. Tasdiqlagandan so'ng hisobingiz faollashadi.",
-        }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            "message": "Ro'yxatdan o'tish muvaffaqiyatli. Tasdiqlash kodi yuborildi."
+        }, status=status.HTTP_200_OK)
+
+    # HAMMA XATOLARNI BITTA STRINGGA YIG'ISH
+    # serializer.errors bu lug'at: {'field': ['error message']}
+    full_error_message = " ".join([error[0] for error in serializer.errors.values()])
+
+    return Response({
+        "message": full_error_message
+    }, status=status.HTTP_400_BAD_REQUEST)
 # 4. Foydalanuvchi ma'lumotlarini olish (Me)
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
@@ -106,7 +118,7 @@ def get_user_data(request):
 @permission_classes([IsAuthenticated])
 def update_user_profile(request):
     user = request.user
-    serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+    serializer = UserSerializer(user, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
         return Response(serializer.data)
