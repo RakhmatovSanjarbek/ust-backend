@@ -91,14 +91,15 @@ class MyUserAdmin(BaseUserAdmin):
     inlines = [SupportMessageInline]
     list_display = ('id', 'user_id', 'phone', 'first_name', 'is_staff')
     search_fields = ('user_id', 'phone', 'first_name')
-    readonly_fields = ('date_joined', 'last_login')
 
-    # admin.E033 xatoligini tuzatish: 'username' o'rniga 'user_id' yoki 'id' ishlatiladi
+    # MUHIM: user_id ni readonly_fields ga qo'shish kerak
+    readonly_fields = ('date_joined', 'last_login', 'first_name', 'last_name', 'phone', 'user_id', 'jshshir', 'passport_series', 'birth_date')
+
     ordering = ('id',)
 
     fieldsets = (
         (None, {'fields': ('password',)}),
-        ('Shaxsiy ma\'lumotlar', {'fields': ('first_name', 'last_name', 'phone', 'user_id', 'jshshir')}),
+        ('Shaxsiy ma\'lumotlar', {'fields': ('first_name', 'last_name', 'phone', 'user_id', 'jshshir', 'passport_series', 'birth_date')}),
         ('Huquqlar', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
         ('Muhim sanalar', {'fields': ('last_login', 'date_joined')}),
     )
