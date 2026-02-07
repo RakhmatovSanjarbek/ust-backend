@@ -13,7 +13,7 @@ class SupportMessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SupportMessage
-        fields = ['id', 'user', 'message', 'image', 'is_from_admin', 'sender_type', 'timestamp_ms']
+        fields = ['id', 'message', 'image', 'is_from_admin', 'sender_type', 'timestamp_ms']
 
     def get_sender_type(self, obj):
         return "Admin" if obj.is_from_admin else "Client"
