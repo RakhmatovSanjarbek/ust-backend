@@ -6,7 +6,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'phone', 'first_name', 'last_name',
+            'id', 'user_id', 'phone', 'first_name', 'last_name',
             'jshshir', 'passport_series', 'birth_date'
         ]
         # Barcha maydonlar majburiy bo'lishi uchun:
