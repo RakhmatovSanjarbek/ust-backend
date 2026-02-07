@@ -70,7 +70,7 @@ class SupportMessageInline(admin.TabularInline):
     model = SupportMessage
     fk_name = 'user'
     extra = 1
-    fields = ('is_from_admin', 'message', 'display_image', 'timestamp_ms')
+    fields = ('message', 'image')
     readonly_fields = ('timestamp_ms', 'display_image')
     can_delete = False
 
@@ -80,6 +80,15 @@ class SupportMessageInline(admin.TabularInline):
         return "-"
 
     display_image.short_description = 'Rasm'
+
+    def save_formset(self, request, form, formset, change):
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if not instance.pk:  # Faqat yangi xabarlar uchun
+                instance.admin = request.user
+                instance.is_from_admin = True
+            instance.save()
+        formset.save_m2m()
 
 
 try:
@@ -121,6 +130,18 @@ class MyUserAdmin(BaseUserAdmin):
         if obj is None:
             kwargs['form'] = self.add_form
         return super().get_form(request, obj, **kwargs)
+
+    def save_formset(self, request, form, formset, change):
+        # SupportMessageInline orqali saqlanayotgan xabarlarni tutib olish
+        instances = formset.save(commit=False)
+        for instance in instances:
+            if isinstance(instance, SupportMessage):
+                # Agar xabar yangi bo'lsa va admin yozayotgan bo'lsa
+                if not instance.pk:
+                    instance.admin = request.user
+                    instance.is_from_admin = True
+            instance.save()
+        formset.save_m2m()
 
 
 # ==========================================
@@ -265,10 +286,26 @@ class DeliveredCargoAdmin(BaseCargoAdmin):
 
 @admin.register(SupportMessage)
 class SupportMessageAdmin(admin.ModelAdmin):
-    list_display = ('user', 'message_preview', 'created_at')
+    fields = ('user', 'message', 'image')
+    list_display = ('user', 'get_sender_display', 'message_preview', 'created_at')
     search_fields = ('user__user_id', 'message')
+
+    def save_model(self, request, obj, form, change):
+        # Agar xabar yangi bo'lsa (yaratilayotgan bo'lsa)
+        if not change:
+            # Xabarni yozayotgan adminni avtomatik biriktiramiz
+            obj.admin = request.user
+            obj.is_from_admin = True
+        super().save_model(request, obj, form, change)
+
+    def get_sender_display(self, obj):
+        if obj.is_from_admin:
+            return format_html('<b style="color: #d9534f;">Admin: {}</b>', obj.admin)
+        return format_html('<b style="color: #5cb85c;">Client</b>')
+
+    get_sender_display.short_description = "Kimdan"
 
     def message_preview(self, obj):
         if obj.message:
             return obj.message[:50] + "..." if len(obj.message) > 50 else obj.message
-        return "🖼 Rasm yuborilgan"
+        return "🖼 Rasm"

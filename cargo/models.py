@@ -93,6 +93,8 @@ class SupportMessage(models.Model):
     timestamp_ms = models.BigIntegerField(editable=False)
 
     def save(self, *args, **kwargs):
+        if self.admin:
+            self.is_from_admin = True
         if not self.timestamp_ms:
             self.timestamp_ms = int(time.time() * 1000)
         super().save(*args, **kwargs)
