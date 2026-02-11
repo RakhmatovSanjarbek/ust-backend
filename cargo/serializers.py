@@ -14,8 +14,8 @@ class SupportMessageSerializer(serializers.ModelSerializer):
     sender_type = serializers.SerializerMethodField()
     user = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(),
-        required=False,  # user maydoni majburiy emas
-        allow_null=True  # null qiymatga ruxsat berish
+        required=False,
+        allow_null=True
     )
 
     class Meta:
@@ -25,11 +25,11 @@ class SupportMessageSerializer(serializers.ModelSerializer):
             'user': {'required': False, 'allow_null': True}
         }
 
-    def get_sender_type(self, obj):
+    @staticmethod
+    def get_sender_type(obj):
         return "Admin" if obj.is_from_admin else "Client"
 
     def create(self, validated_data):
-        # Agar user berilmagan bo'lsa, requestdan olish
         request = self.context.get('request')
         if request and request.user and not validated_data.get('user'):
             validated_data['user'] = request.user

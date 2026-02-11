@@ -38,7 +38,6 @@ class User(AbstractUser):
 
     def save(self, *args, **kwargs):
         if not self.user_id:
-            # Eng oxirgi ID raqamini olish
             last_user = User.objects.all().order_by('id').last()
             next_id = 1 if not last_user else last_user.id + 1
             self.user_id = f"UTS-{str(next_id).zfill(6)}"

@@ -11,10 +11,6 @@ from .models import Cargo, WarehouseCargo, OnWayCargo, ArrivedCargo, DeliveredCa
 from accounts.models import User
 
 
-# ==========================================
-# 1. IMPORT/EXPORT RESURSI (ALGORITM SAQLANDI)
-# ==========================================
-
 class CargoResource(resources.ModelResource):
     track_code = fields.Field(
         attribute='track_code',
@@ -34,37 +30,23 @@ class CargoResource(resources.ModelResource):
         report_skipped = True
 
     def before_import(self, dataset, **kwargs):
-        """
-        Eski algoritmingiz: Excel ichidan sarlavhani qidirib topish va
-        undan yuqoridagi bo'sh qatorlarni tozalash mantig'i saqlandi.
-        """
         if dataset.headers:
             if '追踪代码' not in dataset.headers:
-                # Sarlavha qatorini qidirish
                 for i in range(len(dataset)):
                     row_values = [str(x).strip() for x in dataset[i]]
                     if '追踪代码' in row_values:
                         dataset.headers = row_values
-                        # Sarlavhagacha bo'lgan barcha qatorlarni o'chirish
                         for _ in range(i + 1):
                             dataset.pop(0)
                         break
 
     def before_import_row(self, row, **kwargs):
-        """
-        Eski algoritmingiz: Track code bo'lmasa tashlab ketish va
-        statusni 'Omborda' deb belgilash mantig'i saqlandi.
-        """
         track = row.get('追踪代码')
         if not track:
-            return None  # Bo'sh qatorlarni yuklamaydi
+            return None
 
         row['status'] = 'Omborda'
 
-
-# ==========================================
-# 2. USER VA SUPPORT CHAT
-# ==========================================
 
 class SupportMessageInline(admin.TabularInline):
     model = SupportMessage
@@ -81,10 +63,11 @@ class SupportMessageInline(admin.TabularInline):
 
     display_image.short_description = 'Rasm'
 
-    def save_formset(self, request, form, formset, change):
+    @staticmethod
+    def save_formset(request, formset):
         instances = formset.save(commit=False)
         for instance in instances:
-            if not instance.pk:  # Faqat yangi xabarlar uchun
+            if not instance.pk:
                 instance.admin = request.user
                 instance.is_from_admin = True
             instance.save()
@@ -102,22 +85,19 @@ class MyUserAdmin(BaseUserAdmin):
     inlines = [SupportMessageInline]
     list_display = ('id', 'user_id', 'phone', 'first_name', 'is_staff')
     search_fields = ('user_id', 'phone', 'first_name')
-
-    # MUHIM: user_id ni readonly_fields ga qo'shish kerak
     readonly_fields = ('date_joined', 'last_login', 'user_id',)
 
     ordering = ('id',)
 
     fieldsets = (
         (None, {'fields': ('password',)}),
-        ('Shaxsiy ma\'lumotlar', {'fields': ('first_name', 'last_name', 'phone', 'user_id', 'jshshir', 'passport_series', 'birth_date')}),
+        ('Shaxsiy ma\'lumotlar',
+         {'fields': ('first_name', 'last_name', 'phone', 'user_id', 'jshshir', 'passport_series', 'birth_date')}),
         ('Huquqlar', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups')}),
         ('Muhim sanalar', {'fields': ('last_login', 'date_joined')}),
     )
 
     add_form = MyUserCreationForm
-    # 2. YANGI FOYDALANUVCHI QO'SHISH UCHUN (Add form)
-    # Bu qism 'username' xatoligini yo'qotadi
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
@@ -125,18 +105,15 @@ class MyUserAdmin(BaseUserAdmin):
         }),
     )
 
-    # get_form metodini ham biroz to'g'rilaymiz
     def get_form(self, request, obj=None, **kwargs):
         if obj is None:
             kwargs['form'] = self.add_form
         return super().get_form(request, obj, **kwargs)
 
     def save_formset(self, request, form, formset, change):
-        # SupportMessageInline orqali saqlanayotgan xabarlarni tutib olish
         instances = formset.save(commit=False)
         for instance in instances:
             if isinstance(instance, SupportMessage):
-                # Agar xabar yangi bo'lsa va admin yozayotgan bo'lsa
                 if not instance.pk:
                     instance.admin = request.user
                     instance.is_from_admin = True
@@ -144,21 +121,17 @@ class MyUserAdmin(BaseUserAdmin):
         formset.save_m2m()
 
 
-# ==========================================
-# 3. ASOSIY KARGO ADMIN (SKANER VA STATUSLAR)
-# ==========================================
-
 class BaseCargoAdmin(ImportExportModelAdmin):
     resource_class = CargoResource
     list_display = ('track_code', 'display_uts_id', 'colored_status', 'get_responsible_admin', 'created_at')
     search_fields = ('track_code', 'user__user_id', 'user__phone')
     autocomplete_fields = ['user']
     readonly_fields = (
-    'created_by', 'updated_by', 'delivered_at', 'warehouse_admin', 'onway_admin', 'arrived_admin', 'delivered_admin')
+        'created_by', 'updated_by', 'delivered_at', 'warehouse_admin', 'onway_admin', 'arrived_admin',
+        'delivered_admin')
     list_per_page = 50
 
     def get_responsible_admin(self, obj):
-        """Statusga qarab mas'ul adminni aniqlash"""
         if obj.status == 'Topshirildi': return obj.delivered_admin
         if obj.status == 'Punktda': return obj.arrived_admin
         if obj.status == 'Yo\'lda': return obj.onway_admin
@@ -167,14 +140,11 @@ class BaseCargoAdmin(ImportExportModelAdmin):
     get_responsible_admin.short_description = "Mas'ul xodim"
 
     def save_model(self, request, obj, form, change):
-        """Yangi yuk qo'shilganda yoki status o'zgarganda adminni biriktirish"""
         if not change:
             obj.created_by = request.user
-            # Agar birinchi marta 'Omborda' statusi bilan yaratilsa
             if obj.status == 'Omborda':
                 obj.warehouse_admin = request.user
         else:
-            # Status tahrirlanganda tegishli adminni saqlash
             if 'status' in form.changed_data:
                 if obj.status == 'Yo\'lda': obj.onway_admin = request.user
                 if obj.status == 'Punktda': obj.arrived_admin = request.user
@@ -237,7 +207,6 @@ class WarehouseCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="Tanlanganlarni 'Yo'lga' chiqarish")
     def send_to_way(self, request, queryset):
-        # Update o'rniga har birini save qilish adminni saqlashni kafolatlaydi
         for cargo in queryset:
             cargo.status = 'Yo\'lda'
             cargo.onway_admin = request.user
@@ -268,7 +237,7 @@ class ArrivedCargoAdmin(BaseCargoAdmin):
 
     actions = ['confirm_delivery']
 
-    @admin.action(description="✅ TOPSHIRISHNI TASDIQLASH")
+    @admin.action(description="TOPSHIRISHNI TASDIQLASH")
     def confirm_delivery(self, request, queryset):
         for cargo in queryset:
             cargo.status = 'Topshirildi'
@@ -291,9 +260,7 @@ class SupportMessageAdmin(admin.ModelAdmin):
     search_fields = ('user__user_id', 'message')
 
     def save_model(self, request, obj, form, change):
-        # Agar xabar yangi bo'lsa (yaratilayotgan bo'lsa)
         if not change:
-            # Xabarni yozayotgan adminni avtomatik biriktiramiz
             obj.admin = request.user
             obj.is_from_admin = True
         super().save_model(request, obj, form, change)
@@ -305,7 +272,8 @@ class SupportMessageAdmin(admin.ModelAdmin):
 
     get_sender_display.short_description = "Kimdan"
 
-    def message_preview(self, obj):
+    @staticmethod
+    def message_preview(obj):
         if obj.message:
             return obj.message[:50] + "..." if len(obj.message) > 50 else obj.message
         return "🖼 Rasm"

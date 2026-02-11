@@ -13,14 +13,13 @@ from .serializers import SupportMessageSerializer
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_cargos(request):
-    # Faqat so'rov yuborgan foydalanuvchining yuklarini olish
     cargos = Cargo.objects.filter(user=request.user).order_by('-created_at')
     serializer = CargoSerializer(cargos, many=True)
     return Response(serializer.data)
 
 
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])  # Faqat Admin yoki xodimlar uchun cheklash ham mumkin
+@permission_classes([IsAuthenticated])
 def mark_as_delivered(request):
     track_code = request.data.get('track_code')
     cargo = Cargo.objects.filter(track_code=track_code).first()
@@ -37,18 +36,16 @@ def mark_as_delivered(request):
 
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@parser_classes([MultiPartParser, FormParser, JSONParser])  # Rasm yuklash uchun
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def support_chat_view(request):
     user = request.user
 
     if request.method == 'GET':
-        # Foydalanuvchining hamma xabarlarini olish
         messages = SupportMessage.objects.filter(user=user)
         serializer = SupportMessageSerializer(messages, many=True)
         return Response(serializer.data)
 
     elif request.method == 'POST':
-        # Yangi xabar yoki rasm yuborish
         serializer = SupportMessageSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(user=user, is_from_admin=False)

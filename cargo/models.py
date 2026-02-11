@@ -20,7 +20,6 @@ class Cargo(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Oxirgi o'zgarish")
     delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="Topshirilgan vaqt")
 
-    # Yangi kuzatuv maydonlari
     warehouse_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                         related_name='warehouse_actions', verbose_name="Ombor admini")
     onway_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
@@ -54,29 +53,33 @@ class Cargo(models.Model):
         verbose_name = "Yuk "
         verbose_name_plural = "Yuklar"
 
+
 class WarehouseCargo(Cargo):
     class Meta:
         proxy = True
-        verbose_name = "1. Ombordagi yuk"
-        verbose_name_plural = "1. Ombordagi yuklar"
+        verbose_name = "Ombordagi yuk"
+        verbose_name_plural = "Ombordagi yuklar"
+
 
 class OnWayCargo(Cargo):
     class Meta:
         proxy = True
-        verbose_name = "2. Yo'ldagi yuk"
-        verbose_name_plural = "2. Yo'ldagi yuklar"
+        verbose_name = "Yo'ldagi yuk"
+        verbose_name_plural = "Yo'ldagi yuklar"
+
 
 class ArrivedCargo(Cargo):
     class Meta:
         proxy = True
-        verbose_name = "3. Punkda (Topshirish)"
-        verbose_name_plural = "3. Punktda (Topshirish)"
+        verbose_name = "Punkda (Topshirish)"
+        verbose_name_plural = "Punktda (Topshirish)"
+
 
 class DeliveredCargo(Cargo):
     class Meta:
         proxy = True
-        verbose_name = "4. Topshirilgan yuk"
-        verbose_name_plural = "4. Topshirilgan yuklar"
+        verbose_name = "Topshirilgan yuk"
+        verbose_name_plural = "Topshirilgan yuklar"
 
 
 class SupportMessage(models.Model):
@@ -88,8 +91,6 @@ class SupportMessage(models.Model):
 
     is_from_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-
-    # Millisekund uchun timestamp
     timestamp_ms = models.BigIntegerField(editable=False)
 
     def save(self, *args, **kwargs):

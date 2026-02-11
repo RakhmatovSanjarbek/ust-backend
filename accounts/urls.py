@@ -5,7 +5,6 @@ from .views import (
     verify_otp,
     get_user_data,
     update_user_profile
-    # telegram_webhook qatori olib tashlandi
 )
 
 urlpatterns = [
