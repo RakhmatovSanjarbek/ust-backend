@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from accounts.models import User
-from .models import Cargo, SupportMessage
+from .models import Cargo, SupportMessage, TutorialVideo, CalculationRequest
 
 
 class CargoSerializer(serializers.ModelSerializer):
@@ -34,3 +34,14 @@ class SupportMessageSerializer(serializers.ModelSerializer):
         if request and request.user and not validated_data.get('user'):
             validated_data['user'] = request.user
         return super().create(validated_data)
+
+class TutorialVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TutorialVideo
+        fields = ['id', 'video_url', 'created_at']
+
+class CalculationRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CalculationRequest
+        fields = ['id', 'image', 'weight', 'length', 'width', 'height', 'comment', 'price', 'admin_note', 'is_responded', 'created_at']
+        read_only_fields = ['price', 'admin_note', 'is_responded']

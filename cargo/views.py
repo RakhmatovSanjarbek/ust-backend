@@ -1,7 +1,7 @@
-from .models import Cargo
-from .serializers import CargoSerializer
+from .models import Cargo, TutorialVideo, CalculationRequest
+from .serializers import CargoSerializer, TutorialVideoSerializer, CalculationRequestSerializer
 
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.decorators import api_view, permission_classes, parser_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -51,3 +51,15 @@ def support_chat_view(request):
             serializer.save(user=user, is_from_admin=False)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class VideoListView(generics.ListAPIView):
+    queryset = TutorialVideo.objects.all().order_by('-created_at')
+    serializer_class = TutorialVideoSerializer
+    permission_classes = [permissions.AllowAny]
+
+class CalculationCreateListView(generics.ListCreateAPIView):
+    serializer_class = CalculationRequestSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+    def get_queryset(self): return CalculationRequest.objects.filter(user=self.request.user).order_by('-created_at')
+    def perform_create(self, serializer): serializer.save(user=self.request.user)

@@ -7,7 +7,8 @@ from import_export.widgets import ForeignKeyWidget
 from import_export.admin import ImportExportModelAdmin
 
 from accounts.forms import MyUserCreationForm
-from .models import Cargo, WarehouseCargo, OnWayCargo, ArrivedCargo, DeliveredCargo, SupportMessage
+from .models import Cargo, WarehouseCargo, OnWayCargo, ArrivedCargo, DeliveredCargo, SupportMessage, TutorialVideo, \
+    CalculationRequest
 from accounts.models import User
 
 
@@ -190,9 +191,6 @@ class BaseCargoAdmin(ImportExportModelAdmin):
             'https://unpkg.com/html5-qrcode',
             'admin/js/cargo_scanner.js',
         )
-
-
-# Registratsiyalar
 @admin.register(Cargo)
 class AllCargoAdmin(BaseCargoAdmin):
     list_filter = ('status', 'created_at')
@@ -205,7 +203,7 @@ class WarehouseCargoAdmin(BaseCargoAdmin):
 
     actions = ['send_to_way']
 
-    @admin.action(description="Tanlanganlarni 'Yo'lga' chiqarish")
+    @admin.action(description="Yo'lga chiqarish")
     def send_to_way(self, request, queryset):
         for cargo in queryset:
             cargo.status = 'Yo\'lda'
@@ -221,7 +219,7 @@ class OnWayCargoAdmin(BaseCargoAdmin):
 
     actions = ['mark_as_arrived']
 
-    @admin.action(description="Tanlanganlarni 'Punktga keldi' deb belgilash")
+    @admin.action(description="Punktga keldi deb belgilash")
     def mark_as_arrived(self, request, queryset):
         for cargo in queryset:
             cargo.status = 'Punktda'
@@ -237,7 +235,7 @@ class ArrivedCargoAdmin(BaseCargoAdmin):
 
     actions = ['confirm_delivery']
 
-    @admin.action(description="TOPSHIRISHNI TASDIQLASH")
+    @admin.action(description="Topshirildi deb tasdiqlash")
     def confirm_delivery(self, request, queryset):
         for cargo in queryset:
             cargo.status = 'Topshirildi'
@@ -277,3 +275,13 @@ class SupportMessageAdmin(admin.ModelAdmin):
         if obj.message:
             return obj.message[:50] + "..." if len(obj.message) > 50 else obj.message
         return "🖼 Rasm"
+
+@admin.register(TutorialVideo)
+class TutorialVideoAdmin(admin.ModelAdmin):
+    list_display = ('video_url', 'created_at')
+
+@admin.register(CalculationRequest)
+class CalculationRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'weight', 'price', 'is_responded', 'created_at')
+    list_editable = ('price', 'is_responded')
+    readonly_fields = ('user', 'image', 'weight', 'length', 'width', 'height', 'comment', 'created_at')

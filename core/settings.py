@@ -136,6 +136,8 @@ JAZZMIN_SETTINGS = {
         "cargo.ArrivedCargo": "fas fa-map-marker-alt",
         "cargo.DeliveredCargo": "fas fa-check-double",
         "cargo.SupportMessage": "fas fa-comments",
+        "cargo.TutorialVideo": "fa-solid fa-video",
+        "cargo.CalculationRequest": "fa-solid fa-calculator",
     },
     "default_icon_parents": "fas fa-chevron-circle-right",
     "default_icon_children": "fas fa-cube",
