@@ -67,7 +67,7 @@ DATABASES = {
     'default': dj_database_url.config(
         # Agar DATABASE_URL muhitda topilmasa (masalan, noutbukda),
         # pastdagi eski sozlamalaringizni ishlatadi
-        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:cargo_parol@127.0.0.1:5432/uts_cargo'),
+        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:aFZPBUsgPzjasRYURLLvrwPsdpmeyfHA@postgres.railway.internal:5432/railway'),
         conn_max_age=600
     )
 }
