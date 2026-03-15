@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
+import dj_database_url
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-_mqoid!+$309xe_a+2v$+z6%m@_a_6$(ts()0o^yzt#n&^j*-b'
@@ -62,14 +64,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'uts_cargo',     # PostgreSQL-da yaratgan bazangiz nomi
-        'USER': 'postgres',     # Foydalanuvchi nomi (odatda 'postgres')
-        'PASSWORD': 'cargo_parol', # PostgreSQL paroli
-        'HOST': '127.0.0.1',         # Agar baza serverning o'zida bo'lsa
-        'PORT': '5432',              # Standart port
-    }
+    'default': dj_database_url.config(
+        # Agar DATABASE_URL muhitda topilmasa (masalan, noutbukda),
+        # pastdagi eski sozlamalaringizni ishlatadi
+        default=os.environ.get('DATABASE_URL', 'postgresql://postgres:cargo_parol@127.0.0.1:5432/uts_cargo'),
+        conn_max_age=600
+    )
 }
 
 AUTH_USER_MODEL = 'accounts.User'
