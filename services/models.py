@@ -54,3 +54,25 @@ class CalculationRequest(models.Model):
     class Meta:
         verbose_name = "Kalkulator (Yuk)"
         verbose_name_plural = "Kalkulator (Yuk)"
+
+class WarehouseSettings(models.Model):
+    # Xitoy (AVIA)
+    china_avia_phone = models.CharField(max_length=255, verbose_name="Xitoy (AVIA) telefon")
+    china_avia_address = models.TextField(verbose_name="Xitoy (AVIA) manzili")
+    china_avia_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Xitoy (AVIA) narxi ($)")
+    china_avia_term = models.CharField(max_length=100, verbose_name="Xitoy (AVIA) muddati (kun)")
+
+    # Xitoy (AVTO)
+    china_auto_phone = models.CharField(max_length=255, verbose_name="Xitoy (AVTO) telefon")
+    china_auto_address = models.TextField(verbose_name="Xitoy (AVTO) manzili")
+    china_auto_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Xitoy (AVTO) narxi ($)")
+    china_auto_term = models.CharField(max_length=100, verbose_name="Xitoy (AVTO) muddati (kun)")
+
+    # Kontaktlar
+    contact_telegram = models.CharField(max_length=255, verbose_name="Telegram link")
+    contact_instagram = models.CharField(max_length=255, verbose_name="Instagram link")
+    contact_phone = models.CharField(max_length=255, verbose_name="Asosiy telefon")
+
+    class Meta:
+        verbose_name = "Ombor va Kontakt"
+        verbose_name_plural = "Ombor va Kontak"

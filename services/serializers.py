@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from accounts.models import User
-from .models import SupportMessage, TutorialVideo, CalculationRequest
+from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
+
 
 class SupportMessageSerializer(serializers.ModelSerializer):
     sender_type = serializers.SerializerMethodField()
@@ -42,3 +43,29 @@ class CalculationRequestSerializer(serializers.ModelSerializer):
             'comment', 'price', 'admin_note', 'is_responded', 'created_at'
         ]
         read_only_fields = ['price', 'admin_note', 'is_responded']
+
+class WarehouseSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WarehouseSettings
+        fields = '__all__'
+
+    def to_representation(self, instance):
+        return {
+            "Xitoy_AVIA": {
+                "phone": instance.china_avia_phone,
+                "address": instance.china_avia_address,
+                "price": instance.china_avia_price,
+                "term": instance.china_avia_term
+            },
+            "Xitoy_AVTO": {
+                "phone": instance.china_auto_phone,
+                "address": instance.china_auto_address,
+                "price": instance.china_auto_price,
+                "term": instance.china_auto_term
+            },
+            "contact": {
+                "telegram": instance.contact_telegram,
+                "instagram": instance.contact_instagram,
+                "phone": instance.contact_phone
+            }
+        }

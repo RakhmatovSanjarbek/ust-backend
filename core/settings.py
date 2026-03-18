@@ -2,15 +2,25 @@ import os
 from pathlib import Path
 from datetime import timedelta
 
-import dj_database_url
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(os.path.join(BASE_DIR, '.env'))
 
 SECRET_KEY = 'django-insecure-_mqoid!+$309xe_a+2v$+z6%m@_a_6$(ts()0o^yzt#n&^j*-b'
 
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://10.0.2.2',
+    'https://nomistic-zaire-unperceptional.ngrok-free.dev',  # Ngrok linkini shu yerga qo'shing
+]
+
+SMS_BASE_URL = "https://devsms.uz/api"
+SMS_TOKEN = "6d4dd4d9cf0e17428bce7fce0f5fca71786e42865baf6e38e67e846d61c25f7a"
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -63,16 +73,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+
 DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': 'railway',
-            'USER': 'postgres',
-            'PASSWORD': 'aFZPBUsgPzjasRYURLLvrwPsdpmeyfHA',
-            'HOST': 'postgres.railway.internal',
-            'PORT': '5432',
-        }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'uts_db',     # PostgreSQL-da yaratgan bazangiz nomi
+        'USER': 'uts_admin',     # Foydalanuvchi nomi (odatda 'postgres')
+        'PASSWORD': 'uts_parol',  # PostgreSQL paroli
+        'HOST': '127.0.0.1',         # Agar baza serverning o'zida bo'lsa
+        'PORT': '5432',              # Standart port
     }
+}
 
 AUTH_USER_MODEL = 'accounts.User'
 
@@ -161,7 +173,3 @@ JAZZMIN_UI_TWEAKS = {
         "success": "btn-success"
     }
 }
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://uts-cargo.up.railway.app",
-]

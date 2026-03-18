@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from services.models import SupportMessage, TutorialVideo, CalculationRequest
+from services.models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
 
 
 @admin.register(SupportMessage)
@@ -62,3 +62,21 @@ class SupportMessageInline(admin.TabularInline):
                 instance.is_from_admin = True
             instance.save()
         formset.save_m2m()
+
+@admin.register(WarehouseSettings)
+class WarehouseSettingsAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ('Xitoy (AVIA)', {
+            'fields': ('china_avia_price', 'china_avia_term', 'china_avia_phone', 'china_avia_address')
+        }),
+        ('Xitoy (AVTO)', {
+            'fields': ('china_auto_price', 'china_auto_term', 'china_auto_phone', 'china_auto_address')
+        }),
+        ('Kontaktlar', {
+            'fields': ('contact_telegram', 'contact_instagram', 'contact_phone')
+        }),
+    )
+
+    def has_add_permission(self, request):
+        # Faqat 1 ta yozuv bo'lishini ta'minlaydi
+        return not WarehouseSettings.objects.exists()
