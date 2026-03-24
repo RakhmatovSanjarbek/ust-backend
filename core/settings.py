@@ -12,11 +12,12 @@ SECRET_KEY = 'django-insecure-_mqoid!+$309xe_a+2v$+z6%m@_a_6$(ts()0o^yzt#n&^j*-b
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['46.8.176.172', 'utsgroup.uz', 'www.utsgroup.uz', '127.0.0.1', 'localhost']
 
 CSRF_TRUSTED_ORIGINS = [
-    'http://10.0.2.2',
-    'https://nomistic-zaire-unperceptional.ngrok-free.dev',  # Ngrok linkini shu yerga qo'shing
+    'http://46.8.176.172',
+    'http://utsgroup.uz',
+    'https://utsgroup.uz', # Kelajakda SSL uchun hozirdan qo'shib qo'yavering
 ]
 
 SMS_BASE_URL = "https://devsms.uz/api"
