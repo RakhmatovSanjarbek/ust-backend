@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from utils.sms_service import send_sms
-from .models import User, OTPCode
-from .serializers import UserSerializer
+from .models import User, OTPCode, UserRelative
+from .serializers import UserSerializer, UserRelativeSerializer
 
 
 def generate_otp():
@@ -132,6 +132,30 @@ def signup(request):
         status=200,
     )
 
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def manage_relatives(request):
+    if request.method == "GET":
+        relatives = request.user.relatives.all()
+        serializer = UserRelativeSerializer(relatives, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = UserRelativeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_relative(request, pk):
+    try:
+        relative = request.user.relatives.get(pk=pk)
+        relative.delete()
+        return Response({"message": "Muvaffaqqiyatli o'chirildi"}, status=204)
+    except UserRelative.DoesNotExist:
+        return Response({"message": "Topilmadi"}, status=404)
 
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])

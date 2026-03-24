@@ -1,7 +1,16 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, UserRelative
 import re
 
+class UserRelativeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserRelative
+        fields = ["id", "full_name", "jshshir", "passport_series", "birth_date", "phone", "created_at"]
+
+    def validate_passport_series(self, value):
+        if not re.match(r"^[A-Z]{2}\d{7}$", value.upper()):
+            raise serializers.ValidationError("Pasport seriyasi noto'g'ri (AA1234567)")
+        return value.upper()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -16,10 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
             "passport_series",
             "birth_date",
             "address",
-            "relative_full_name",
-            "relative_jshshir",
-            "relative_passport_series",
-            "relative_phone",
         ]
 
     def validate_phone(self, value):

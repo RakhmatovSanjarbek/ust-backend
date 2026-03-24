@@ -5,7 +5,9 @@ from .views import (
     verify_otp,
     get_user_data,
     update_user_profile,
-    delete_account
+    delete_account,
+    manage_relatives,
+    delete_relative
 )
 
 urlpatterns = [
@@ -15,4 +17,6 @@ urlpatterns = [
     path('me/', get_user_data),
     path('update/', update_user_profile),
     path('delete-account/', delete_account),
+    path('relatives/', manage_relatives),
+    path('relatives/<int:pk>/', delete_relative),
 ]

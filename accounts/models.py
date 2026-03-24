@@ -40,11 +40,6 @@ class User(AbstractUser):
 
     is_verified = models.BooleanField(default=False)
 
-    relative_full_name = models.CharField(max_length=255, null=True, blank=True)
-    relative_jshshir = models.CharField(max_length=14, null=True, blank=True)
-    relative_passport_series = models.CharField(max_length=9, null=True, blank=True)
-    relative_phone = models.CharField(max_length=15, null=True, blank=True)
-
     objects = UserManager()
 
     USERNAME_FIELD = "phone"
@@ -61,6 +56,17 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.user_id} | {self.phone}"
 
+class UserRelative(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="relatives")
+    full_name = models.CharField(max_length=255)
+    jshshir = models.CharField(max_length=14)
+    passport_series = models.CharField(max_length=9)
+    birth_date = models.DateField(null=True, blank=True) # Yangi qo'shildi
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.full_name} ({self.user.user_id} uchun)"
 
 class OTPCode(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")

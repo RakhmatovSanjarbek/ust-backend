@@ -1,6 +1,8 @@
 from django.db import models
-from accounts.models import User
+
 from core import settings
+from django.utils import timezone
+
 
 class Cargo(models.Model):
     STATUS_CHOICES = [
@@ -9,20 +11,27 @@ class Cargo(models.Model):
         ('Punktda', 'Punktda'),
         ('Topshirildi', 'Topshirildi'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cargos', verbose_name="Foydalanuvchi")
-    track_code = models.CharField(max_length=50, unique=True, verbose_name="Trek kod")
+    user = models.ForeignKey('accounts.User', on_delete=models.CASCADE, related_name='cargos',
+                             verbose_name="Foydalanuvchi")
+    track_code = models.CharField(max_length=100, unique=True, verbose_name="Trek kod")
+    flight_name = models.CharField(max_length=100, null=True, blank=True, verbose_name="Reys")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Omborda', verbose_name="Status")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Qo'shilgan sana")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Oxirgi o'zgarish")
-    delivered_at = models.DateTimeField(null=True, blank=True, verbose_name="Topshirilgan vaqt")
+
+    # Omborga kelgan sana (Exceldan keladi yoki hozirgi vaqt)
+    created_at = models.DateTimeField(default=timezone.now, verbose_name="Omborga kelgan sana")
+    updated_at = models.DateTimeField(auto_now=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
     warehouse_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                        related_name='warehouse_actions', verbose_name="Ombor admini")
+                                        related_name='wh_admin')
     onway_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='onway_actions', verbose_name="Yo'lga chiqargan")
+                                    related_name='ow_admin')
     arrived_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                      related_name='arrived_actions', verbose_name="Punktga qabul qilgan")
+                                      related_name='ar_admin')
     delivered_admin = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                        related_name='delivery_actions', verbose_name="Topshirgan admin")
+                                        related_name='dl_admin')
+
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
+                                   related_name='cargo_creator')
     arrived_group = models.ForeignKey(
         'warehouse.ArrivedGroup',
         on_delete=models.CASCADE,
@@ -31,8 +40,6 @@ class Cargo(models.Model):
         related_name='cargos',
         verbose_name="Kelganlar guruhi"
     )
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
-                                   related_name='created_cargos', verbose_name="Qo'shgan admin")
     updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True,
                                    related_name='updated_cargos', verbose_name="Mas'ul admin")
 
@@ -43,11 +50,13 @@ class Cargo(models.Model):
         verbose_name = "Yuk"
         verbose_name_plural = "Yuklar"
 
+
 class WarehouseCargo(Cargo):
     class Meta:
         proxy = True
         verbose_name = "Ombordagi yuk"
         verbose_name_plural = "Ombordagi yuklar"
+
 
 class OnWayCargo(Cargo):
     class Meta:
@@ -55,11 +64,13 @@ class OnWayCargo(Cargo):
         verbose_name = "Yo'ldagi yuk"
         verbose_name_plural = "Yo'ldagi yuklar"
 
+
 class ArrivedCargo(Cargo):
     class Meta:
         proxy = True
         verbose_name = "Punkda (Topshirish)"
         verbose_name_plural = "Punktda (Topshirish)"
+
 
 class DeliveredCargo(Cargo):
     class Meta:
