@@ -48,7 +48,12 @@ class User(AbstractUser):
     def save(self, *args, **kwargs):
         if not self.user_id:
             last_user = User.objects.order_by("id").last()
-            next_id = 1 if not last_user else last_user.id + 1
+
+            if not last_user:
+                next_id = 100
+            else:
+                next_id = max(last_user.id + 1, 100)
+
             self.user_id = f"UTS-{str(next_id).zfill(3)}"
 
         super().save(*args, **kwargs)
@@ -56,17 +61,19 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.user_id} | {self.phone}"
 
+
 class UserRelative(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="relatives")
     full_name = models.CharField(max_length=255)
     jshshir = models.CharField(max_length=14)
     passport_series = models.CharField(max_length=9)
-    birth_date = models.DateField(null=True, blank=True) # Yangi qo'shildi
+    birth_date = models.DateField(null=True, blank=True)
     phone = models.CharField(max_length=15, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.full_name} ({self.user.user_id} uchun)"
+
 
 class OTPCode(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="otps")
