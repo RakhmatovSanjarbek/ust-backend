@@ -4,9 +4,11 @@ from datetime import timedelta
 
 from dotenv import load_dotenv
 
+from django.utils.translation import gettext_lazy as _
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+load_dotenv()
 
 SECRET_KEY = 'django-insecure-_mqoid!+$309xe_a+2v$+z6%m@_a_6$(ts()0o^yzt#n&^j*-b'
 
@@ -17,11 +19,8 @@ ALLOWED_HOSTS = ['46.8.176.172', 'utsgroup.uz', 'www.utsgroup.uz', '127.0.0.1', 
 CSRF_TRUSTED_ORIGINS = [
     'http://46.8.176.172',
     'http://utsgroup.uz',
-    'https://utsgroup.uz', # Kelajakda SSL uchun hozirdan qo'shib qo'yavering
+    'https://utsgroup.uz',
 ]
-
-SMS_BASE_URL = "https://devsms.uz/api"
-SMS_TOKEN = "6d4dd4d9cf0e17428bce7fce0f5fca71786e42865baf6e38e67e846d61c25f7a"
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -48,6 +47,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -74,16 +74,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'core.wsgi.application'
 
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'uts_db',     # PostgreSQL-da yaratgan bazangiz nomi
-        'USER': 'uts_admin',     # Foydalanuvchi nomi (odatda 'postgres')
-        'PASSWORD': 'uts_parol',  # PostgreSQL paroli
-        'HOST': '127.0.0.1',         # Agar baza serverning o'zida bo'lsa
-        'PORT': '5432',              # Standart port
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -111,10 +109,22 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator', },
 ]
 
-LANGUAGE_CODE = 'uz-uz'
+LANGUAGE_CODE = 'uz'
 TIME_ZONE = 'Asia/Tashkent'
 USE_I18N = True
+USE_L10N = True
 USE_TZ = True
+
+
+LANGUAGES = [
+    ('uz', _('Uzbek')),
+    ('ru', _('Russian')),
+    ('en', _('English')),
+]
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale'),
+]
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
@@ -136,6 +146,14 @@ JAZZMIN_SETTINGS = {
     "search_model": ["accounts.User", "cargo.Cargo"],
     "show_sidebar": True,
     "navigation_expanded": True,
+    "language_chooser": True,
+    "order_with_respect_to": [
+        "accounts",
+        "auth",
+        "warehouse",
+        "cargo",
+        "services",
+    ],
     "icons": {
         "auth": "fas fa-users-cog",
         "auth.Group": "fas fa-users",

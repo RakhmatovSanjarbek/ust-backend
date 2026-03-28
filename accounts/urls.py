@@ -1,4 +1,5 @@
 from django.urls import path
+from django.urls import path, include
 from .views import (
     signin_request,
     signup,
@@ -11,6 +12,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('signin/', signin_request),
     path('signup/', signup),
     path('verify/', verify_otp),

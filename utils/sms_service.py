@@ -1,15 +1,19 @@
-import requests
+import os
 
-BASE_URL = "https://devsms.uz/api"
-TOKEN = "6d4dd4d9cf0e17428bce7fce0f5fca71786e42865baf6e38e67e846d61c25f7a"
+import requests
+from dotenv import load_dotenv
+
+load_dotenv()
+BASE_URL = os.getenv('SMS_BASE_URL')
+TOKEN = os.getenv('SMS_TOKEN')
 
 headers = {
     "Authorization": f"Bearer {TOKEN}",
     "Content-Type": "application/json"
 }
 
-def send_sms(phone, message):
 
+def send_sms(phone, message):
     print("SMS yuborilmoqda:", phone, message)
 
     response = requests.post(
@@ -20,7 +24,5 @@ def send_sms(phone, message):
             "message": message
         }
     )
-
-    print("SMS javobi:", response.text)
 
     return response.json()
