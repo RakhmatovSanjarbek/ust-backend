@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - UTS Cargo</title>
+    <style>
+        :root { --main: #024837; --bg: #f4f7f6; --glass: rgba(255, 255, 255, 0.9); }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; line-height: 1.7; }
+        .nav { background: var(--main); padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; cursor: pointer; border-radius: 20px; margin: 0 8px; transition: 0.3s; font-weight: 500; }
+        .nav button:hover { background: white; color: var(--main); }
+        .container { max-width: 900px; margin: 40px auto; background: var(--glass); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); }
+        .lang-section { display: none; }
+        .active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: var(--main); font-size: 28px; border-bottom: 3px solid var(--main); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: var(--main); font-size: 20px; margin-top: 35px; display: flex; align-items: center; }
+        h2::before { content: "•"; margin-right: 10px; color: var(--main); font-size: 30px; }
+        p, li { font-size: 16px; color: #444; text-align: justify; }
+        ul { padding-left: 20px; }
+        .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button onclick="setLang('uz')">O'zbekcha</button>
+    <button onclick="setLang('ru')">Русский</button>
+    <button onclick="setLang('en')">English</button>
+</div>
+
+<div class="container">
+    <div id="uz" class="lang-section active">
+        <h1>Maxfiylik Siyosati</h1>
+        <p><i>Oxirgi yangilanish: 2026-yil 29-mart</i></p>
+        <p>Ushbu Maxfiylik siyosati "MCHJ SADIKO EXPRESS" (keyingi o‘rinlarda "Kompaniya") tomonidan taqdim etilgan "UTS Cargo" mobil ilovasi foydalanuvchilarining shaxsiy ma’lumotlarini to‘plash, saqlash va himoya qilish tartibini belgilaydi.</p>
+
+        <h2>1. To‘planadigan ma’lumotlar</h2>
+        <ul>
+            <li><b>Shaxsiy ma’lumotlar:</b> Ism, familiya, telefon raqami va foydalanuvchining noyob ID raqami (100 dan boshlanuvchi).</li>
+            <li><b>Logistika ma’lumotlari:</b> Buyurtma qilingan tovarlarning trek-kodlari, og‘irligi, narxi va qabul qilish manzili.</li>
+            <li><b>Texnik ma’lumotlar:</b> Qurilma modeli, IP-manzil, operatsion tizim versiyasi va Firebase Remote Config orqali olinadigan yangilanish ma’lumotlari.</li>
+        </ul>
+
+        <h2>2. Ma’lumotlardan foydalanish maqsadlari</h2>
+        <p>Biz ma’lumotlarni quyidagi maqsadlarda qayta ishlaymiz:</p>
+        <ul>
+            <li>Xitoydan O‘zbekistonga yuk tashish xizmatini ko‘rsatish va yuk holatini real vaqt rejimida kuzatish.</li>
+            <li>Foydalanuvchilarni yuk kelgani haqida Push-xabarnomalar orqali ogohlantirish.</li>
+            <li>Ilovani yangilash va texnik xatoliklarni bartaraf etish.</li>
+        </ul>
+
+        <h2>3. Ma’lumotlarni saqlash va xavfsizlik</h2>
+        <p>Barcha ma’lumotlar Airnet.uz serverlaridagi PostgreSQL ma’lumotlar bazasida shifrlangan holda saqlanadi. Biz foydalanuvchi ma’lumotlarini uchinchi shaxslarga sotmaymiz. Ma’lumotlar faqat qonunchilikda belgilangan hollarda davlat organlariga taqdim etilishi mumkin.</p>
+
+        <h2>4. Foydalanuvchi huquqlari</h2>
+        <p>Foydalanuvchi o‘z shaxsiy ma’lumotlarini tahrirlash, o‘chirish yoki hisobini butunlay yo‘q qilish huquqiga ega. Buning uchun ilova sozlamalari yoki qo‘llab-quvvatlash xizmatiga murojaat qilish kifoya.</p>
+    </div>
+
+    <div id="ru" class="lang-section">
+        <h1>Политика конфиденциальности</h1>
+        <p><i>Последнее обновление: 29 марта 2026 г.</i></p>
+        <p>Настоящая политика определяет порядок обработки персональных данных пользователей приложения "UTS Cargo", предоставляемого ООО "SADIKO EXPRESS".</p>
+        <h2>1. Сбор информации</h2>
+        <ul>
+            <li><b>Персональные данные:</b> Имя, номер телефона и уникальный ID пользователя.</li>
+            <li><b>Данные логистики:</b> Трек-коды, вес груза и история заказов.</li>
+            <li><b>Технические данные:</b> Версия ОС, данные Firebase и отчеты об ошибках.</li>
+        </ul>
+        <h2>2. Цели использования</h2>
+        <p>Данные используются для обеспечения доставки грузов из Китая, уведомления пользователей и улучшения функционала приложения.</p>
+        <h2>3. Защита данных</h2>
+        <p>Данные хранятся в защищенной базе PostgreSQL. Мы гарантируем конфиденциальность и безопасность вашей информации.</p>
+    </div>
+
+    <div id="en" class="lang-section">
+        <h1>Privacy Policy</h1>
+        <p><i>Last Updated: March 29, 2026</i></p>
+        <p>This policy governs the processing of personal data for the "UTS Cargo" mobile application provided by "SADIKO EXPRESS LLC".</p>
+        <h2>1. Information Collection</h2>
+        <ul>
+            <li><b>Personal Data:</b> Name, phone number, and unique User ID.</li>
+            <li><b>Logistics Data:</b> Tracking codes, cargo weight, and shipping history.</li>
+        </ul>
+        <h2>2. Purpose of Processing</h2>
+        <p>We use your data to provide international shipping services, track orders, and send important notifications.</p>
+        <h2>3. Data Security</h2>
+        <p>All data is stored on secure servers (PostgreSQL) and is protected by industry-standard encryption.</p>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 UTS Cargo | MCHJ SADIKO EXPRESS | Barcha huquqlar himoyalangan.
+    </div>
+</div>
+
+<script>
+    function setLang(lang) {
+        document.querySelectorAll('.lang-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(lang).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+</script>
+</body>
+</html>

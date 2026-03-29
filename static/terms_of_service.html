@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Service - UTS Cargo</title>
+    <style>
+        /* Yuqoridagi CSS bilan bir xil */
+        :root { --main: #024837; --bg: #f4f7f6; --glass: rgba(255, 255, 255, 0.9); }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #333; margin: 0; line-height: 1.7; }
+        .nav { background: var(--main); padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; cursor: pointer; border-radius: 20px; margin: 0 8px; transition: 0.3s; }
+        .nav button:hover { background: white; color: var(--main); }
+        .container { max-width: 900px; margin: 40px auto; background: var(--glass); padding: 50px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
+        .lang-section { display: none; }
+        .active { display: block; }
+        h1 { color: var(--main); font-size: 28px; border-bottom: 3px solid var(--main); padding-bottom: 10px; }
+        h2 { color: var(--main); font-size: 20px; margin-top: 30px; }
+        p, li { font-size: 16px; color: #444; }
+        .footer { text-align: center; margin-top: 50px; color: #777; font-size: 14px; border-top: 1px solid #ddd; padding-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button onclick="setLang('uz')">O'zbekcha</button>
+    <button onclick="setLang('ru')">Русский</button>
+    <button onclick="setLang('en')">English</button>
+</div>
+
+<div class="container">
+    <div id="uz" class="lang-section active">
+        <h1>Foydalanish Shartlari</h1>
+        <p>Ushbu shartlar "UTS Cargo" ilovasi va "MCHJ SADIKO EXPRESS" xizmatlaridan foydalanish tartibini belgilaydi.</p>
+        
+        <h2>1. Ro'yxatdan o'tish</h2>
+        <p>Foydalanuvchi ilovada ro'yxatdan o'tayotganda haqiqiy ism va telefon raqamini ko'rsatishi shart. Har bir foydalanuvchiga 100 dan boshlanuvchi noyob ID biriktiriladi.</p>
+
+        <h2>2. Yuk tashish qoidalari</h2>
+        <ul>
+            <li><b>Taqiqlangan buyumlar:</b> Giyohvandlik vositalari, qurol-yarog', portlovchi moddalar, suyuqliklar (ma'lum turlari) va qonun bilan taqiqlangan boshqa buyumlarni tashish qat'iyan man etiladi.</li>
+            <li><b>Mas'uliyat:</b> Foydalanuvchi Xitoy do'konlarida (Pinduoduo, Taobao va b.) manzil va ID raqamini to'g'ri kiritishga mas'uldir.</li>
+        </ul>
+
+        <h2>3. To'lov va Yetkazib berish</h2>
+        <p>Yuk tashish narxlari amaldagi tariflarga muvofiq og'irlik yoki hajm bo'yicha hisoblanadi. To'lov yukni topshirish vaqtida yoki ilovada ko'rsatilgan usullar orqali amalga oshiriladi.</p>
+    </div>
+
+    <div id="ru" class="lang-section">
+        <h1>Условия использования</h1>
+        <h2>1. Регистрация</h2>
+        <p>Пользователь обязан предоставить достоверные данные. Каждому пользователю присваивается уникальный ID.</p>
+        <h2>2. Правила перевозки</h2>
+        <p>Запрещена перевозка оружия, наркотиков и других незаконных предметов. Пользователь несет ответственность за правильность указания адреса склада.</p>
+    </div>
+
+    <div id="en" class="lang-section">
+        <h1>Terms of Service</h1>
+        <h2>1. Registration</h2>
+        <p>Users must provide accurate personal information. A unique ID starting from 100 is assigned to each user.</p>
+        <h2>2. Shipping Rules</h2>
+        <p>Shipping of illegal items, weapons, or prohibited substances is strictly forbidden. The user is responsible for correct warehouse address input.</p>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 UTS Cargo | MCHJ SADIKO EXPRESS
+    </div>
+</div>
+
+<script>
+    function setLang(lang) {
+        document.querySelectorAll('.lang-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(lang).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+</script>
+</body>
+</html>
