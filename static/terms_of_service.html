@@ -3,21 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms of Service - UTS Cargo</title>
+    <title>Terms of Service - UTS</title>
     <style>
-        /* Yuqoridagi CSS bilan bir xil */
         :root { --main: #024837; --bg: #f4f7f6; --glass: rgba(255, 255, 255, 0.9); }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: #333; margin: 0; line-height: 1.7; }
-        .nav { background: var(--main); padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 1000; }
-        .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; cursor: pointer; border-radius: 20px; margin: 0 8px; transition: 0.3s; }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; line-height: 1.7; }
+        .nav { background: var(--main); padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; cursor: pointer; border-radius: 20px; margin: 0 8px; transition: 0.3s; font-weight: 500; }
         .nav button:hover { background: white; color: var(--main); }
-        .container { max-width: 900px; margin: 40px auto; background: var(--glass); padding: 50px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); }
+        .container { max-width: 900px; margin: 40px auto; background: var(--glass); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); }
         .lang-section { display: none; }
-        .active { display: block; }
-        h1 { color: var(--main); font-size: 28px; border-bottom: 3px solid var(--main); padding-bottom: 10px; }
-        h2 { color: var(--main); font-size: 20px; margin-top: 30px; }
-        p, li { font-size: 16px; color: #444; }
-        .footer { text-align: center; margin-top: 50px; color: #777; font-size: 14px; border-top: 1px solid #ddd; padding-top: 20px; }
+        .active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: var(--main); font-size: 28px; border-bottom: 3px solid var(--main); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: var(--main); font-size: 20px; margin-top: 35px; display: flex; align-items: center; }
+        h2::before { content: "•"; margin-right: 10px; color: var(--main); font-size: 30px; }
+        p, li { font-size: 16px; color: #444; text-align: justify; }
+        ul { padding-left: 20px; }
+        .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -31,39 +33,81 @@
 <div class="container">
     <div id="uz" class="lang-section active">
         <h1>Foydalanish Shartlari</h1>
-        <p>Ushbu shartlar "UTS Cargo" ilovasi va "MCHJ SADIKO EXPRESS" xizmatlaridan foydalanish tartibini belgilaydi.</p>
-        
-        <h2>1. Ro'yxatdan o'tish</h2>
-        <p>Foydalanuvchi ilovada ro'yxatdan o'tayotganda haqiqiy ism va telefon raqamini ko'rsatishi shart. Har bir foydalanuvchiga 100 dan boshlanuvchi noyob ID biriktiriladi.</p>
+        <p><i>Oxirgi yangilanish: 2026-yil 7-aprel</i></p>
+        <p>Ushbu shartlar "UTS" ilovasi va "MCHJ SADIKO EXPRESS" xizmatlaridan foydalanish tartibini belgilaydi. Ilovadan ro'yxatdan o'tish orqali siz ushbu shartlarga rozilik bildirasiz.</p>
+
+        <h2>1. Ro'yxatdan o'tish va Identifikatsiya</h2>
+        <ul>
+            <li>Foydalanuvchi SMS-kod orqali tasdiqlangan telefon raqami yordamida ro'yxatdan o'tishi shart.</li>
+            <li>Xalqaro kurerlik xizmati talablariga muvofiq, foydalanuvchi o'zining haqiqiy ism-familiyasi va pasport ma'lumotlarini taqdim etishi shart.</li>
+            <li>Har bir foydalanuvchiga "UTS-100" formatidan boshlanuvchi shaxsiy ID biriktiriladi.</li>
+        </ul>
 
         <h2>2. Yuk tashish qoidalari</h2>
         <ul>
-            <li><b>Taqiqlangan buyumlar:</b> Giyohvandlik vositalari, qurol-yarog', portlovchi moddalar, suyuqliklar (ma'lum turlari) va qonun bilan taqiqlangan boshqa buyumlarni tashish qat'iyan man etiladi.</li>
-            <li><b>Mas'uliyat:</b> Foydalanuvchi Xitoy do'konlarida (Pinduoduo, Taobao va b.) manzil va ID raqamini to'g'ri kiritishga mas'uldir.</li>
+            <li><b>Taqiqlangan buyumlar:</b> Giyohvandlik vositalari, qurol-yarog', portlovchi va yonuvchan moddalar, suyuqliklar (ma'lum cheklovlar bilan), valyuta va qonun bilan taqiqlangan boshqa buyumlarni tashish qat'iyan man etiladi.</li>
+            <li><b>Mas'uliyat:</b> Foydalanuvchi Xitoy internet-do'konlarida (Pinduoduo, Taobao va b.) ombor manzilini va o'z ID raqamini to'g'ri ko'rsatishga shaxsan javobgardir.</li>
         </ul>
 
-        <h2>3. To'lov va Yetkazib berish</h2>
-        <p>Yuk tashish narxlari amaldagi tariflarga muvofiq og'irlik yoki hajm bo'yicha hisoblanadi. To'lov yukni topshirish vaqtida yoki ilovada ko'rsatilgan usullar orqali amalga oshiriladi.</p>
+        <h2>3. To'lovlar va Tariflar</h2>
+        <p>Yuk tashish narxi yukning jismoniy og'irligi yoki hajmiy og'irligiga qarab joriy tariflar bo'yicha hisoblanadi. To'lovlar ilova ichidagi to'lov tizimlari orqali yoki yukni qabul qilish punktlarida amalga oshiriladi.</p>
+
+        <h2>4. Yukni yetkazib berish va saqlash</h2>
+        <p>Yukning holati (statusi) ilovada real vaqt rejimida yangilanib boradi. Omborga kelgan yuk uchun to'lov qilinganidan so'ng, foydalanuvchi yukni olib ketish usulini (o'zi olib ketish yoki kurer orqali) tanlashi mumkin.</p>
     </div>
 
     <div id="ru" class="lang-section">
         <h1>Условия использования</h1>
-        <h2>1. Регистрация</h2>
-        <p>Пользователь обязан предоставить достоверные данные. Каждому пользователю присваивается уникальный ID.</p>
+        <p><i>Последнее обновление: 7 апреля 2026 г.</i></p>
+        <p>Настоящие условия определяют порядок использования приложения "UTS" и услуг ООО "SADIKO EXPRESS". Регистрируясь в приложении, вы соглашаетесь с данными условиями.</p>
+
+        <h2>1. Регистрация и Идентификация</h2>
+        <ul>
+            <li>Регистрация осуществляется через подтверждение номера телефона по SMS.</li>
+            <li>Пользователь обязан указать реальное имя, фамилию и паспортные данные для таможенного оформления.</li>
+            <li>Каждому пользователю присваивается уникальный ID, начиная с "UTS-100".</li>
+        </ul>
+
         <h2>2. Правила перевозки</h2>
-        <p>Запрещена перевозка оружия, наркотиков и других незаконных предметов. Пользователь несет ответственность за правильность указания адреса склада.</p>
+        <ul>
+            <li><b>Запрещенные предметы:</b> Оружие, наркотики, взрывчатые вещества, горючие жидкости, валюта и другие предметы, запрещенные законодательством.</li>
+            <li><b>Ответственность:</b> Пользователь несет личную ответственность за правильное указание адреса склада и своего ID в интернет-магазинах Китая.</li>
+        </ul>
+
+        <h2>3. Оплата и Тарифы</h2>
+        <p>Стоимость перевозки рассчитывается исходя из фактического или объемного веса по текущим тарифам. Оплата производится в приложении или в пунктах выдачи.</p>
+
+        <h2>4. Доставка и хранение</h2>
+        <p>Статус груза обновляется в приложении в режиме реального времени. После оплаты за груз, прибывший на склад, пользователь может выбрать способ получения (самовывоз или курьерская доставка).</p>
     </div>
 
     <div id="en" class="lang-section">
         <h1>Terms of Service</h1>
-        <h2>1. Registration</h2>
-        <p>Users must provide accurate personal information. A unique ID starting from 100 is assigned to each user.</p>
+        <p><i>Last Updated: April 7, 2026</i></p>
+        <p>These terms govern the use of the "UTS" application and the services of "SADIKO EXPRESS LLC". By registering, you agree to these terms.</p>
+
+        <h2>1. Registration and Identification</h2>
+        <ul>
+            <li>Users must register using a phone number verified via SMS code.</li>
+            <li>Accurate personal and passport information must be provided for customs clearance.</li>
+            <li>A unique personal ID starting from "UTS-100" is assigned to each user.</li>
+        </ul>
+
         <h2>2. Shipping Rules</h2>
-        <p>Shipping of illegal items, weapons, or prohibited substances is strictly forbidden. The user is responsible for correct warehouse address input.</p>
+        <ul>
+            <li><b>Prohibited Items:</b> Weapons, drugs, explosives, flammable substances, currency, and other items prohibited by law are strictly forbidden for transport.</li>
+            <li><b>Responsibility:</b> The user is personally responsible for correctly entering the warehouse address and their unique ID on Chinese shopping platforms.</li>
+        </ul>
+
+        <h2>3. Payments and Rates</h2>
+        <p>Shipping costs are calculated based on actual or volumetric weight according to current rates. Payments can be made via in-app payment systems or at pickup points.</p>
+
+        <h2>4. Delivery and Pickup</h2>
+        <p>Cargo status is updated in real-time within the app. Once payment is settled for arrived cargo, the user can choose the delivery method (self-pickup or courier delivery).</p>
     </div>
 
     <div class="footer">
-        &copy; 2026 UTS Cargo | MCHJ SADIKO EXPRESS
+        &copy; 2026 UTS | MCHJ SADIKO EXPRESS | Barcha huquqlar himoyalangan.
     </div>
 </div>
 
