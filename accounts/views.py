@@ -56,9 +56,15 @@ def signin_request(request):
                 phone="998940000000",
                 first_name="Google",
                 last_name="Tester",
+                jshshir="12345678901234",
+                passport_series="AA1234567",
+                birth_date="1990-01-01",
+                address="Tashkent city, Amir Temur street, 10",
                 is_active=True,
                 is_verified=True
             )
+            user.user_id = "UTS-999"
+            user.save()
             # user_id modelingizdagi save() metodi orqali avtomatik UTS-100 (yoki keyingi) bo'ladi
 
         # Eski OTPni o'chirib, doimiy 123456 kodini yaratamiz
