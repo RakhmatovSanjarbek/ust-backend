@@ -38,12 +38,37 @@ def normalize_phone(phone):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def signin_request(request):
-
-    phone = normalize_phone(request.data.get("phone"))
+    # Raqamni normallashtiramiz
+    phone_input = request.data.get("phone")
+    phone = normalize_phone(phone_input)
 
     if not phone:
         return Response({"message": "Telefon raqam kiritilmadi"}, status=400)
 
+    # --- GOOGLE TESTER UCHUN MAXSUS YO'L (BOSHIGA QO'SHILDI) ---
+    if phone == "998940000000":
+        # Bazadan ushbu raqamli foydalanuvchini qidiramiz
+        user = User.objects.filter(phone="998940000000").first()
+
+        # Agar yo'q bo'lsa, avtomatik yaratamiz
+        if not user:
+            user = User.objects.create_user(
+                phone="998940000000",
+                first_name="Google",
+                last_name="Tester",
+                is_active=True,
+                is_verified=True
+            )
+            # user_id modelingizdagi save() metodi orqali avtomatik UTS-100 (yoki keyingi) bo'ladi
+
+        # Eski OTPni o'chirib, doimiy 123456 kodini yaratamiz
+        OTPCode.objects.filter(user=user).delete()
+        OTPCode.objects.create(user=user, code="123456")
+
+        return Response({"message": "Test rejimida kod yuborildi (123456)"})
+    # --- GOOGLE TESTER TUGADI ---
+
+    # ODDIY FOYDALANUVCHILAR UCHUN ASLIY MANTIQ
     user = User.objects.filter(phone__icontains=phone[-9:]).first()
 
     if not user:
@@ -52,14 +77,14 @@ def signin_request(request):
             status=404,
         )
 
-    # eski OTP ni o'chiramiz
+    # Eski OTP ni o'chiramiz
     OTPCode.objects.filter(user=user).delete()
 
+    # Yangi tasodifiy OTP yaratamiz
     otp_code = generate_otp()
-
     OTPCode.objects.create(user=user, code=otp_code)
 
-    # SMS yuborish
+    # Haqiqiy SMS yuborish
     send_sms(phone, f"UTS ilovasiga kirish uchun tasdiqlash kodi: {otp_code}")
 
     return Response({"message": "Tasdiqlash kodi SMS orqali yuborildi"})
