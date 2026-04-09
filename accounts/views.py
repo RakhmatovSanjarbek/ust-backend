@@ -47,31 +47,31 @@ def signin_request(request):
 
     # --- GOOGLE TESTER UCHUN MAXSUS YO'L (BOSHIGA QO'SHILDI) ---
     if phone == "998940000000":
-        # Bazadan ushbu raqamli foydalanuvchini qidiramiz
-        user = User.objects.filter(phone="998940000000").first()
+        # Bu usul foydalanuvchi bo'lsa ma'lumotlarini yangilaydi, bo'lmasa yaratadi
+        user, created = User.objects.get_or_create(phone="998940000000")
 
-        # Agar yo'q bo'lsa, avtomatik yaratamiz
-        if not user:
-            user = User.objects.create_user(
-                phone="998940000000",
-                first_name="Google",
-                last_name="Tester",
-                jshshir="12345678901234",
-                passport_series="AA1234567",
-                birth_date="1990-01-01",
-                address="Tashkent city, Amir Temur street, 10",
-                is_active=True,
-                is_verified=True
-            )
-            user.user_id = "UTS-999"
-            user.save()
-            # user_id modelingizdagi save() metodi orqali avtomatik UTS-100 (yoki keyingi) bo'ladi
+        user.first_name = "Google"
+        user.last_name = "Tester"
+        user.jshshir = "12345678901234"
+        user.passport_series = "AA1234567"
+        user.birth_date = "1990-01-01"
+        user.address = "Toshkent sh., Amir Temur ko'chasi, 10-uy"
+        user.user_id = "UTS-999"  # Majburiy UTS-999 qilamiz
+        user.is_active = True
+        user.is_verified = True
 
-        # Eski OTPni o'chirib, doimiy 123456 kodini yaratamiz
+        # Agar foydalanuvchi yangi bo'lsa, parolini sozlaymiz
+        if created:
+            user.set_unusable_password()
+
+        user.save()
+
+        # OTP yaratish
         OTPCode.objects.filter(user=user).delete()
         OTPCode.objects.create(user=user, code="123456")
 
         return Response({"message": "Test rejimida kod yuborildi (123456)"})
+
     # --- GOOGLE TESTER TUGADI ---
 
     # ODDIY FOYDALANUVCHILAR UCHUN ASLIY MANTIQ
