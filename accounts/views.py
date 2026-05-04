@@ -2,14 +2,16 @@ import random
 from datetime import timedelta
 from django.utils import timezone
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated, BasePermission
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from utils.sms_service import send_sms
 from .models import User, OTPCode, UserRelative
 from .serializers import UserSerializer, UserRelativeSerializer
+
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 def generate_otp():
@@ -99,38 +101,43 @@ def signin_request(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
-
-    phone = normalize_phone(request.data.get("phone"))
+    phone_input = request.data.get("phone")
+    phone = normalize_phone(phone_input)
     otp_code = request.data.get("otp_code")
 
     if not phone or not otp_code:
         return Response({"message": "Telefon yoki kod kiritilmadi"}, status=400)
 
+    # Oxirgi yuborilgan kodni olish
     otp_record = OTPCode.objects.filter(
-        user__phone__icontains=phone[-9:], code=otp_code
+        user__phone__icontains=phone[-9:],
+        code=otp_code
     ).order_by("-created_at").first()
 
     if not otp_record:
-        return Response({"message": "Kod noto'g'ri"}, status=400)
+        return Response({"message": "Tasdiqlash kodi noto'g'ri"}, status=400)
 
-    # OTP 2 minut amal qiladi
+    # 2 minutlik muddatni tekshirish
     if otp_record.created_at < timezone.now() - timedelta(minutes=2):
-        return Response({"message": "Kod muddati tugagan"}, status=400)
+        return Response({"message": "Kod muddati tugagan. Qaytadan so'rang."}, status=400)
 
     user = otp_record.user
 
-    user.is_active = True
+    # Foydalanuvchini tasdiqlangan (verified) deb belgilaymiz
     user.is_verified = True
+    user.last_active = timezone.now()  # Aktivlik vaqtini yangilash
     user.save()
 
+    # Ishlatilgan kodni o'chiramiz
     OTPCode.objects.filter(user=user).delete()
 
-    token = str(RefreshToken.for_user(user).access_token)
+    # JWT Tokenlarni generatsiya qilish
+    refresh = RefreshToken.for_user(user)
 
     return Response(
         {
             "message": "Muvaffaqiyatli kirdingiz",
-            "token": token,
+            "token": str(refresh.access_token),  # Faqat bitta asosiy token
         },
         status=200,
     )
@@ -138,30 +145,31 @@ def verify_otp(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@parser_classes([MultiPartParser, FormParser])
 def signup(request):
+    phone = normalize_phone(request.data.get("phone"))
+    user = User.objects.filter(phone__icontains=phone[-9:]).first()
 
-    serializer = UserSerializer(data=request.data)
+    if user:
+        if user.status == 'approved':
+            return Response({"message": "Allaqachon tasdiqlangan"}, status=400)
+        serializer = UserSerializer(user, data=request.data, partial=True)
+    else:
+        serializer = UserSerializer(data=request.data)
 
-    if not serializer.is_valid():
-        error_message = " ".join([e[0] for e in serializer.errors.values()])
-        return Response({"message": error_message}, status=400)
+    if serializer.is_valid():
+        user = serializer.save()
+        user.is_active = True  # MUKAMMAL YECHIM: Token ishlashi uchun
+        user.status = 'pending'
+        user.save()
 
-    user = serializer.save(is_active=False)
+        OTPCode.objects.filter(user=user).delete()
+        otp_code = generate_otp()
+        OTPCode.objects.create(user=user, code=otp_code)
+        send_sms(phone, f"Tasdiqlash kodi: {otp_code}")
+        return Response({"message": "SMS yuborildi, arizangiz kutilmoqda"}, status=200)
 
-    phone = normalize_phone(user.phone)
-
-    OTPCode.objects.filter(user=user).delete()
-
-    otp_code = generate_otp()
-
-    OTPCode.objects.create(user=user, code=otp_code)
-
-    send_sms(phone, f"UTS ilovasiga kirish uchun tasdiqlash kodi: {otp_code}")
-
-    return Response(
-        {"message": "Ro'yxatdan o'tish muvaffaqiyatli. SMS yuborildi"},
-        status=200,
-    )
+    return Response(serializer.errors, status=400)
 
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated])
@@ -188,12 +196,12 @@ def delete_relative(request, pk):
     except UserRelative.DoesNotExist:
         return Response({"message": "Topilmadi"}, status=404)
 
+
 @api_view(["GET"])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated]) # Endi bu muammosiz ishlaydi
 def get_user_data(request):
-
-    serializer = UserSerializer(request.user)
-
+    user = request.user
+    serializer = UserSerializer(user)
     return Response(serializer.data)
 
 

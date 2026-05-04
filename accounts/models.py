@@ -20,24 +20,41 @@ class UserManager(BaseUserManager):
     def create_superuser(self, phone, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("status", "approved")
 
         return self.create_user(phone, password, **extra_fields)
 
 
 class User(AbstractUser):
+    STATUS_CHOICES = (
+        ('pending', 'Kutilmoqda'),
+        ('approved', 'Tasdiqlangan'),
+        ('rejected', 'Rad etilgan'),
+    )
+    REJECTION_REASONS = (
+        ('passport_blur', 'Pasport rasmi xira'),
+        ('invalid_data', 'Ma’lumotlar xato'),
+        ('fake_document', 'Hujjat haqiqiy emas'),
+        ('other', 'Boshqa sabab'),
+    )
+
     username = None
 
     phone = models.CharField(max_length=15, unique=True)
-    user_id = models.CharField(max_length=20, unique=True, editable=False)
+    user_id = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
-
     jshshir = models.CharField(max_length=14, null=True, blank=True)
     passport_series = models.CharField(max_length=9, null=True, blank=True)
+    passport_front = models.ImageField(upload_to='passports/', null=True, blank=True)
+    passport_back = models.ImageField(upload_to='passports/', null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     address = models.TextField(null=True, blank=True)
-
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    rejection_reason = models.CharField(max_length=50, choices=REJECTION_REASONS, null=True, blank=True)
+    rejection_note = models.TextField(null=True, blank=True, help_text="Qo'shimcha izoh")
+    last_active = models.DateTimeField(auto_now=True)
     is_verified = models.BooleanField(default=False)
 
     objects = UserManager()
@@ -45,21 +62,8 @@ class User(AbstractUser):
     USERNAME_FIELD = "phone"
     REQUIRED_FIELDS = ["first_name", "last_name"]
 
-    def save(self, *args, **kwargs):
-        if not self.user_id:
-            last_user = User.objects.order_by("id").last()
-
-            if not last_user:
-                next_id = 100
-            else:
-                next_id = max(last_user.id + 1, 100)
-
-            self.user_id = f"UTS-{str(next_id).zfill(3)}"
-
-        super().save(*args, **kwargs)
-
     def __str__(self):
-        return f"{self.user_id} | {self.phone}"
+        return f"{self.user_id or 'ID yoq'} | {self.phone}"
 
 
 class UserRelative(models.Model):

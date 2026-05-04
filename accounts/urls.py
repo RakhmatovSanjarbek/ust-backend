@@ -1,5 +1,7 @@
 from django.urls import path
 from django.urls import path, include
+from rest_framework_simplejwt.views import TokenRefreshView
+
 from .views import (
     signin_request,
     signup,
@@ -21,4 +23,5 @@ urlpatterns = [
     path('delete-account/', delete_account),
     path('relatives/', manage_relatives),
     path('relatives/<int:pk>/', delete_relative),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
