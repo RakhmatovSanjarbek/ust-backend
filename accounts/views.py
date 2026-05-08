@@ -166,7 +166,7 @@ def signup(request):
         OTPCode.objects.filter(user=user).delete()
         otp_code = generate_otp()
         OTPCode.objects.create(user=user, code=otp_code)
-        send_sms(phone, f"Tasdiqlash kodi: {otp_code}")
+        send_sms(phone, f"UTS ilovasiga kirish uchun tasdiqlash kodi: {otp_code}")
         return Response({"message": "SMS yuborildi, arizangiz kutilmoqda"}, status=200)
 
     return Response(serializer.errors, status=400)
