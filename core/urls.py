@@ -11,7 +11,6 @@ urlpatterns = [
     path('api/cargo/', include('cargo.urls')),
     path('api/warehouse/', include('warehouse.urls')),
     path('api/services/', include('services.urls')),
-    path('chat/', include('chat.urls')),  # Admin chat interfeysi
     path('api/chat/', include('chat.urls')),
 ]
 
