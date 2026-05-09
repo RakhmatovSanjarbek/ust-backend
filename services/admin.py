@@ -2,7 +2,6 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
-from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
