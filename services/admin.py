@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
 from accounts.models import User
@@ -9,12 +10,14 @@ from accounts.models import User
 
 @admin.register(SupportMessage)
 class SupportMessageAdmin(admin.ModelAdmin):
+    # ✅ TELEGRAM-STIL INTERFEYS UCHUN
+    change_list_template = 'admin/services/telegram_chat.html'
+
     list_display = ('user', 'message_preview', 'is_from_admin', 'created_at')
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('chat/', self.admin_site.admin_view(self.chat_view), name='support_chat'),
             path('api/users/', self.admin_site.admin_view(self.api_users), name='support_api_users'),
             path('api/messages/<int:user_id>/', self.admin_site.admin_view(self.api_messages),
                  name='support_api_messages'),
@@ -23,12 +26,6 @@ class SupportMessageAdmin(admin.ModelAdmin):
                  name='support_api_mark_read'),
         ]
         return custom_urls + urls
-
-    def chat_view(self, request):
-        return render(request, 'admin/services/telegram_chat.html', {
-            'title': 'Chat',
-            'users': User.objects.filter(is_staff=False)
-        })
 
     def api_users(self, request):
         # ✅ TO'G'RI - 'chat_messages' (modeldagi related_name)
@@ -91,7 +88,6 @@ class SupportMessageAdmin(admin.ModelAdmin):
     message_preview.short_description = "Xabar"
 
 
-# Qolgan adminlar
 @admin.register(TutorialVideo)
 class TutorialVideoAdmin(admin.ModelAdmin):
     list_display = ('video_url', 'created_at')
