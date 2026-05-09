@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'cargo',
     'warehouse',
     'services',
-    'chat',
     'whitenoise.runserver_nostatic',
 ]
 
