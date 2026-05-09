@@ -1,22 +1,20 @@
 from django.contrib import admin
 from django.urls import path
-from django.shortcuts import get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.utils.html import format_html
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
 from accounts.models import User
 
 
 @admin.register(SupportMessage)
 class SupportMessageAdmin(admin.ModelAdmin):
-    change_list_template = 'admin/services/telegram_chat.html'
     list_display = ('user', 'message_preview', 'is_from_admin', 'created_at')
 
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
+            path('chat/', self.admin_site.admin_view(self.chat_view), name='support_chat'),
             path('api/users/', self.admin_site.admin_view(self.api_users), name='support_api_users'),
             path('api/messages/<int:user_id>/', self.admin_site.admin_view(self.api_messages),
                  name='support_api_messages'),
@@ -26,7 +24,14 @@ class SupportMessageAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+    def chat_view(self, request):
+        return render(request, 'admin/services/telegram_chat.html', {
+            'title': 'Chat',
+            'users': User.objects.filter(is_staff=False)
+        })
+
     def api_users(self, request):
+        # ✅ TO'G'RI - 'chat_messages' (modeldagi related_name)
         users = User.objects.filter(chat_messages__isnull=False).distinct()
         data = []
         for user in users:
@@ -57,19 +62,18 @@ class SupportMessageAdmin(admin.ModelAdmin):
                 'time': msg.created_at.strftime('%H:%M'),
                 'date': msg.created_at.strftime('%d.%m.%Y'),
             })
+        # Admin ko'rgan xabarlarni o'qilgan deb belgilash
         SupportMessage.objects.filter(user_id=user_id, is_from_admin=False, is_read=False).update(is_read=True)
         return JsonResponse(data, safe=False)
 
-    @method_decorator(csrf_exempt)
     def api_send(self, request):
         if request.method == 'POST':
             user_id = request.POST.get('user_id')
-            message = request.POST.get('message', '')
+            message = request.POST.get('message')
             image = request.FILES.get('image')
             user = get_object_or_404(User, id=user_id)
             SupportMessage.objects.create(
                 user=user,
-                admin=request.user,
                 message=message,
                 image=image,
                 is_from_admin=True
@@ -82,13 +86,12 @@ class SupportMessageAdmin(admin.ModelAdmin):
         return JsonResponse({'status': 'ok'})
 
     def message_preview(self, obj):
-        if obj.image:
-            return format_html('📷 Rasm')
-        return obj.message[:50] if obj.message else "-"
+        return obj.message[:50] if obj.message else '📷'
 
     message_preview.short_description = "Xabar"
 
 
+# Qolgan adminlar
 @admin.register(TutorialVideo)
 class TutorialVideoAdmin(admin.ModelAdmin):
     list_display = ('video_url', 'created_at')
