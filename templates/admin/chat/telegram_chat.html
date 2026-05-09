@@ -1,10 +1,11 @@
+<!-- templates/admin/services/telegram_chat.html -->
 {% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block extrastyle %}
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
     .telegram-chat-container {
         display: flex;
         height: calc(100vh - 100px);
@@ -14,7 +15,6 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Sidebar */
     .chat-sidebar {
         width: 320px;
         background: #fff;
@@ -96,7 +96,6 @@
         font-weight: 600;
     }
 
-    /* Chat Area */
     .chat-main {
         flex: 1;
         display: flex;
@@ -228,7 +227,6 @@
 
 {% block content %}
 <div class="telegram-chat-container">
-    <!-- Sidebar -->
     <div class="chat-sidebar">
         <div class="chat-sidebar-header">
             <h3>💬 Foydalanuvchilar</h3>
@@ -238,7 +236,6 @@
         </div>
     </div>
 
-    <!-- Chat Main -->
     <div class="chat-main">
         <div class="chat-header" id="chatHeader" style="display: none;">
             <h3 id="selectedUserName">Tanlang</h3>
@@ -263,9 +260,51 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     let currentUserId = null;
+    let shouldAutoScroll = true;      // ✅ Avtomatik scroll qilish kerakmi?
+    let lastMessageCount = 0;         // ✅ Oldingi xabarlar soni
+    let refreshInterval = null;       // ✅ Interval handler
+
+    // Scroll holatini kuzatish
+    function setupScrollListener() {
+        const messagesArea = document.getElementById('messagesArea');
+        if (!messagesArea) return;
+
+        messagesArea.removeEventListener('scroll', onScroll);
+        messagesArea.addEventListener('scroll', onScroll);
+    }
+
+    function onScroll() {
+        const messagesArea = document.getElementById('messagesArea');
+        if (!messagesArea) return;
+
+        // Pastga yaqinmi?
+        const isNearBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight < 100;
+
+        if (isNearBottom) {
+            shouldAutoScroll = true;
+        } else {
+            shouldAutoScroll = false;
+        }
+    }
+
+    function scrollToBottom() {
+        const messagesArea = document.getElementById('messagesArea');
+        if (!messagesArea) return;
+
+        if (shouldAutoScroll) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+    }
+
+    function scrollToBottomForce() {
+        const messagesArea = document.getElementById('messagesArea');
+        if (messagesArea) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+        }
+    }
 
     function loadUsers() {
-        $.get('/admin/chat/api/users/', function(users) {
+        $.get('/admin/services/supportmessage/api/users/', function(users) {
             const container = $('#usersList');
             container.empty();
 
@@ -301,6 +340,7 @@
                 $('#selectedUserPhone').text(phone);
                 $('#chatHeader, #inputArea').show();
 
+                shouldAutoScroll = true;  // Yangi user tanlanganda scroll yoqiladi
                 loadMessages(id);
                 $(this).find('.unread-badge').remove();
             });
@@ -308,8 +348,12 @@
     }
 
     function loadMessages(userId) {
-        $.get(`/admin/chat/api/messages/${userId}/`, function(messages) {
+        $.get(`/admin/services/supportmessage/api/messages/${userId}/`, function(messages) {
             const container = $('#messagesArea');
+            const currentCount = messages.length;
+            const hasNewMessage = currentCount > lastMessageCount;
+            lastMessageCount = currentCount;
+
             container.empty();
 
             let lastDate = '';
@@ -319,7 +363,6 @@
                     lastDate = msg.date;
                 }
 
-                const face = msg.is_admin ? '👤' : '👨‍💼';
                 const html = `
                     <div class="message ${msg.is_admin ? 'admin' : 'user'}">
                         <div class="message-bubble">
@@ -332,7 +375,13 @@
                 container.append(html);
             });
 
-            container.scrollTop(container[0].scrollHeight);
+            // ✅ Faqat auto scroll yoqilgan bo'lsa va yangi xabar kelgan bo'lsa scroll qil
+            if (shouldAutoScroll && hasNewMessage) {
+                scrollToBottom();
+            } else if (!shouldAutoScroll && hasNewMessage) {
+                // Yangi xabar keldi lekin admin o'qiyotgan ekan – faqat badge yangilanadi
+                console.log('Yangi xabar keldi, lekin auto scroll o\'chiq');
+            }
         });
     }
 
@@ -348,7 +397,7 @@
         if (imageFile) formData.append('image', imageFile);
 
         $.ajax({
-            url: '/admin/chat/api/send/',
+            url: '/admin/services/supportmessage/api/send/',
             type: 'POST',
             data: formData,
             processData: false,
@@ -356,7 +405,9 @@
             success: function() {
                 $('#messageInput').val('');
                 $('#imageInput').val('');
+                shouldAutoScroll = true;  // Xabar yuborganda scroll yoqiladi
                 loadMessages(currentUserId);
+                loadUsers();
             }
         });
     }
@@ -370,6 +421,25 @@
         });
     }
 
+    // Auto-refresh (har 5 sekund)
+    function startAutoRefresh() {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(function() {
+            if (currentUserId) {
+                loadMessages(currentUserId);
+            }
+            loadUsers();
+        }, 5000);
+    }
+
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            refreshInterval = null;
+        }
+    }
+
+    // Event listeners
     $('#sendBtn').click(sendMessage);
     $('#messageInput').keypress(function(e) {
         if (e.which === 13) sendMessage();
@@ -379,7 +449,16 @@
         if (this.files.length) sendMessage();
     });
 
-    loadUsers();
-    setInterval(() => { loadUsers(); if(currentUserId) loadMessages(currentUserId); }, 5000);
+    // Sahifa yuklanganda
+    $(document).ready(function() {
+        loadUsers();
+        startAutoRefresh();
+        setupScrollListener();
+
+        // Sahifa yopilganda interval to'xtatiladi (ixtiyoriy)
+        $(window).on('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    });
 </script>
 {% endblock %}
