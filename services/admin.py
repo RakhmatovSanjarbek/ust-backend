@@ -27,7 +27,7 @@ class SupportMessageAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def api_users(self, request):
-        users = User.objects.filter(support_messages__isnull=False).distinct()
+        users = User.objects.filter(chat_messages__isnull=False).distinct()
         data = []
         for user in users:
             last_msg = SupportMessage.objects.filter(user=user).last()
