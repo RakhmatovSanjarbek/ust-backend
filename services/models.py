@@ -4,6 +4,7 @@ from accounts.models import User
 
 
 class SupportMessage(models.Model):
+    is_read = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='chat_messages')
     admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='admin_responses')
     message = models.TextField(null=True, blank=True)
