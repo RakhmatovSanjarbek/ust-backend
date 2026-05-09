@@ -1,0 +1,301 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #f5f7fa; }
+    .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .header h1 { font-size: 24px; font-weight: 600; color: #202124; }
+    .back-link { color: #5f6368; text-decoration: none; padding: 8px 16px; border-radius: 8px; }
+    .back-link:hover { background: #e8eaed; }
+    .grid { display: flex; gap: 24px; flex-wrap: wrap; }
+    .col { flex: 1; min-width: 300px; }
+    .card { background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 16px 20px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; font-weight: 600; font-size: 16px; color: #202124; }
+    .card-body { padding: 20px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 500; color: #202124; font-size: 14px; }
+    select, input[type="text"], input[type="file"] { width: 100%; padding: 10px 12px; border: 1px solid #dadce0; border-radius: 10px; font-size: 14px; outline: none; transition: all 0.2s; }
+    select:focus, input:focus { border-color: #1e88e5; box-shadow: 0 0 0 3px rgba(30,136,229,0.1); }
+    .cargo-list { max-height: 400px; overflow-y: auto; border: 1px solid #e0e0e0; border-radius: 12px; }
+    .cargo-item { display: flex; align-items: center; padding: 14px 16px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.2s; }
+    .cargo-item:hover { background: #f8f9fa; }
+    .cargo-item.selected { background: #e3f2fd; }
+    .cargo-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 14px; cursor: pointer; }
+    .cargo-info { flex: 1; }
+    .track-code { font-weight: 600; color: #202124; margin-bottom: 4px; }
+    .flight-name { font-size: 12px; color: #5f6368; margin-bottom: 4px; }
+    .cargo-details { font-size: 11px; color: #5f6368; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 500; background: #fff3e0; color: #e67e22; }
+    .selected-count { background: #1e88e5; color: white; padding: 4px 12px; border-radius: 20px; font-size: 13px; }
+    .summary-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .summary-card .card-header { background: rgba(255,255,255,0.1); border-bottom-color: rgba(255,255,255,0.2); color: white; }
+    .summary-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.15); }
+    .summary-item:last-child { border-bottom: none; }
+    .summary-label { opacity: 0.9; font-size: 14px; }
+    .summary-value { font-weight: 700; font-size: 18px; }
+    .btn { padding: 12px 28px; border: none; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #1e88e5; color: white; }
+    .btn-primary:hover { background: #0b5fc0; transform: translateY(-1px); }
+    .btn-primary:disabled { background: #ccc; transform: none; }
+    .btn-success { background: #28a745; color: white; }
+    .btn-success:hover { background: #1e7e34; transform: translateY(-1px); }
+    .image-preview { max-width: 100%; max-height: 150px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
+    .alert { padding: 14px 18px; border-radius: 12px; margin-top: 20px; }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .empty-state { text-align: center; padding: 40px; color: #5f6368; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h1>➕ Yangi Guruh Yaratish</h1>
+        <a href="{% url 'admin:warehouse_arrivedgroup_changelist' %}" class="back-link">← Guruhlar ro'yxati</a>
+    </div>
+
+    <div class="grid">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">1️⃣ Foydalanuvchi tanlash</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>👤 Foydalanuvchi</label>
+                        <select id="userSelect">
+                            <option value="">-- Tanlang --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="flightCard" style="display: none;">
+                <div class="card-header">2️⃣ Reys tanlash</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>✈️ Reys</label>
+                        <select id="flightSelect">
+                            <option value="">-- Tanlang --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="groupCard" style="display: none;">
+                <div class="card-header">3️⃣ Guruh ma'lumotlari</div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>📋 Res kodi</label>
+                        <input type="text" id="receiptCode" placeholder="Masalan: RES-2026-001">
+                    </div>
+                    <div class="form-group">
+                        <label>🖼 Guruh rasmi</label>
+                        <input type="file" id="groupImage" accept="image/*">
+                        <div id="imagePreview"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="card" id="cargosCard" style="display: none;">
+                <div class="card-header">
+                    4️⃣ Yuklarni tanlash
+                    <span id="selectedCount" class="selected-count" style="float: right;">0</span>
+                </div>
+                <div class="card-body">
+                    <div id="cargosList" class="cargo-list">
+                        <div class="empty-state">← Avval foydalanuvchi va reysni tanlang</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card summary-card" id="summaryCard" style="display: none;">
+                <div class="card-header">📊 Jami hisobot</div>
+                <div class="card-body">
+                    <div class="summary-item"><span class="summary-label">📦 Tanlangan yuklar</span><span class="summary-value" id="totalCount">0</span></div>
+                    <div class="summary-item"><span class="summary-label">⚖ Umumiy og'irlik</span><span class="summary-value" id="totalWeight">0 kg</span></div>
+                    <div class="summary-item"><span class="summary-label">💰 Umumiy summa</span><span class="summary-value" id="totalPrice">0 so'm</span></div>
+                </div>
+            </div>
+
+            <div id="createCard" style="display: none; text-align: right; margin-top: 20px;">
+                <button id="createGroupBtn" class="btn btn-success">✓ Guruh yaratish</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="result"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    let selectedUser = null;
+    let selectedFlight = null;
+    let selectedCargos = new Map();
+
+    function loadUsers() {
+        $.get('/admin/warehouse/arrivedgroup/api/users/', function(users) {
+            const select = $('#userSelect');
+            select.empty().append('<option value="">-- Foydalanuvchi tanlang --</option>');
+            users.forEach(user => {
+                select.append(`<option value="${user.id}">${user.name} (${user.user_id}) - ${user.phone}</option>`);
+            });
+        });
+    }
+
+    $('#userSelect').change(function() {
+        const userId = $(this).val();
+        if (!userId) {
+            $('#flightCard, #cargosCard, #summaryCard, #groupCard, #createCard').hide();
+            selectedUser = null;
+            return;
+        }
+        selectedUser = userId;
+        loadFlights(userId);
+        $('#flightCard').show();
+    });
+
+    function loadFlights(userId) {
+        $.get(`/admin/warehouse/arrivedgroup/api/flights/${userId}/`, function(flights) {
+            const select = $('#flightSelect');
+            select.empty().append('<option value="">-- Reys tanlang --</option>');
+            flights.forEach(flight => {
+                select.append(`<option value="${flight}">✈️ ${flight}</option>`);
+            });
+        });
+    }
+
+    $('#flightSelect').change(function() {
+        const flightName = $(this).val();
+        if (!flightName || !selectedUser) {
+            $('#cargosCard, #summaryCard, #groupCard, #createCard').hide();
+            return;
+        }
+        selectedFlight = flightName;
+        loadCargos(selectedUser, flightName);
+        $('#cargosCard, #groupCard').show();
+    });
+
+    function loadCargos(userId, flightName) {
+        $('#cargosList').html('<div class="empty-state">⏳ Yuklar yuklanmoqda...</div>');
+        
+        $.get(`/admin/warehouse/arrivedgroup/api/cargos/${userId}/${encodeURIComponent(flightName)}/`, function(cargos) {
+            selectedCargos.clear();
+            updateSummary();
+            
+            if (cargos.length === 0) {
+                $('#cargosList').html('<div class="empty-state">📭 Bu reysda yuklar yo\'q</div>');
+                $('#summaryCard, #createCard').hide();
+                return;
+            }
+            
+            $('#summaryCard, #createCard').show();
+            const container = $('#cargosList').empty();
+            
+            cargos.forEach(cargo => {
+                container.append(`
+                    <div class="cargo-item" data-id="${cargo.id}">
+                        <input type="checkbox" class="cargo-checkbox" data-id="${cargo.id}" data-weight="${cargo.weight}" data-price="${cargo.price}">
+                        <div class="cargo-info">
+                            <div class="track-code">📦 ${cargo.track_code}</div>
+                            <div class="flight-name">✈️ ${cargo.flight_name}</div>
+                            <div class="cargo-details">⚖ ${cargo.weight} kg | 💰 ${cargo.price.toLocaleString()} so'm</div>
+                        </div>
+                        <span class="status-badge">🚚 Yo'lda</span>
+                    </div>
+                `);
+            });
+            
+            $('.cargo-checkbox').change(function() {
+                const id = parseInt($(this).data('id'));
+                const weight = parseFloat($(this).data('weight')) || 0;
+                const price = parseFloat($(this).data('price')) || 0;
+                
+                if ($(this).is(':checked')) {
+                    selectedCargos.set(id, { weight, price });
+                } else {
+                    selectedCargos.delete(id);
+                }
+                updateSummary();
+                $(this).closest('.cargo-item').toggleClass('selected', $(this).is(':checked'));
+            });
+            
+            $('.cargo-item').click(function(e) {
+                if (e.target.type !== 'checkbox') {
+                    const checkbox = $(this).find('.cargo-checkbox');
+                    checkbox.prop('checked', !checkbox.prop('checked')).trigger('change');
+                }
+            });
+        });
+    }
+
+    function updateSummary() {
+        let count = selectedCargos.size;
+        let totalWeight = 0, totalPrice = 0;
+        selectedCargos.forEach(c => { totalWeight += c.weight; totalPrice += c.price; });
+        
+        $('#selectedCount').text(count);
+        $('#totalCount').text(count);
+        $('#totalWeight').text(totalWeight.toFixed(2) + ' kg');
+        $('#totalPrice').text(totalPrice.toLocaleString() + ' so\'m');
+    }
+
+    $('#groupImage').change(function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => $('#imagePreview').html(`<img src="${event.target.result}" class="image-preview">`);
+            reader.readAsDataURL(file);
+        } else {
+            $('#imagePreview').empty();
+        }
+    });
+
+    $('#createGroupBtn').click(function() {
+        const receiptCode = $('#receiptCode').val().trim();
+        const imageFile = $('#groupImage')[0].files[0];
+        
+        if (!receiptCode) return $('#result').html('<div class="alert alert-error">❌ Res kodini kiriting</div>');
+        if (selectedCargos.size === 0) return $('#result').html('<div class="alert alert-error">❌ Hech qanday yuk tanlanmagan</div>');
+        
+        const formData = new FormData();
+        formData.append('user_id', selectedUser);
+        formData.append('receipt_code', receiptCode);
+        formData.append('cargo_ids', JSON.stringify(Array.from(selectedCargos.keys())));
+        if (imageFile) formData.append('image', imageFile);
+        
+        const btn = $(this);
+        btn.prop('disabled', true).text('⏳ Yaratilmoqda...');
+        
+        $.ajax({
+            url: '/admin/warehouse/arrivedgroup/api/create-group/',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(res) {
+                if (res.status === 'success') {
+                    $('#result').html(`<div class="alert alert-success">✅ ${res.message} <a href="/admin/warehouse/arrivedgroup/${res.group_id}/change/">Guruhni ko'rish</a></div>`);
+                    $('#receiptCode, #groupImage').val('');
+                    $('#imagePreview').empty();
+                    $('#flightSelect').val('');
+                    $('#cargosCard, #summaryCard, #groupCard, #createCard').hide();
+                    selectedCargos.clear();
+                    $('#userSelect').val('');
+                    updateSummary();
+                    loadUsers();
+                } else {
+                    $('#result').html(`<div class="alert alert-error">❌ ${res.error}</div>`);
+                }
+            },
+            error: (err) => $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${err.responseJSON?.error || 'Noma\'lum'}</div>`),
+            complete: () => btn.prop('disabled', false).text('✓ Guruh yaratish')
+        });
+    });
+    
+    loadUsers();
+</script>
+{% endblock %}

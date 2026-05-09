@@ -1,400 +1,327 @@
-<!-- templates/admin/warehouse/arrived_group_chat.html -->
 {% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block extrastyle %}
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    .group-container {
-        max-width: 1400px;
-        margin: 20px auto;
-        padding: 20px;
-    }
-    
-    .card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 20px;
-        overflow: hidden;
-    }
-    
-    .card-header {
-        padding: 20px;
-        background: #f8f9fa;
-        border-bottom: 1px solid #e0e0e0;
-        font-weight: 600;
-        font-size: 18px;
-    }
-    
-    .card-body {
-        padding: 20px;
-    }
-    
-    .form-group {
-        margin-bottom: 20px;
-    }
-    
-    label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #202124;
-    }
-    
-    select, input {
-        width: 100%;
-        padding: 12px;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 14px;
-        outline: none;
-    }
-    
-    select:focus, input:focus {
-        border-color: #1e88e5;
-    }
-    
-    button {
-        background: #1e88e5;
-        color: white;
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 500;
-        font-size: 14px;
-    }
-    
-    button:hover { background: #0b5fc0; }
-    button:disabled { background: #ccc; cursor: not-allowed; }
-    
-    .cargo-list {
-        max-height: 400px;
-        overflow-y: auto;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-    }
-    
-    .cargo-item {
-        display: flex;
-        align-items: center;
-        padding: 12px 16px;
-        border-bottom: 1px solid #f0f0f0;
-        cursor: pointer;
-        transition: background 0.2s;
-    }
-    
-    .cargo-item:hover { background: #f5f5f5; }
-    .cargo-item.selected { background: #e3f2fd; }
-    
-    .cargo-item input[type="checkbox"] {
-        width: 20px;
-        height: 20px;
-        margin-right: 12px;
-    }
-    
-    .cargo-info {
-        flex: 1;
-    }
-    
-    .track-code {
-        font-weight: 600;
-        color: #202124;
-    }
-    
-    .flight-name {
-        font-size: 12px;
-        color: #5f6368;
-    }
-    
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 500;
-    }
-    
-    .status-yolda { background: #fff3e0; color: #e67e22; }
-    
-    .selected-count {
-        background: #1e88e5;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-    }
-    
-    .alert {
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 20px;
-    }
-    
-    .alert-success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
-    }
-    
-    .alert-error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
-    }
-    
-    .row {
-        display: flex;
-        gap: 20px;
-    }
-    
-    .col {
-        flex: 1;
-    }
+    body { background: #f5f7fa; }
+    .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
+    .card { background: white; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
+    .card-header { padding: 18px 24px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 16px; color: #1e293b; }
+    .card-body { padding: 24px; }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    select, input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; transition: all 0.2s; background: white; }
+    select:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+    .search-box { margin-bottom: 16px; }
+    .search-box input { padding-left: 36px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="15" y1="15" x2="22" y2="22"/></svg>') no-repeat 12px center; background-size: 16px; }
+    .cargo-list { max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; }
+    .cargo-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
+    .cargo-item:hover { background: #f8fafc; }
+    .cargo-item.selected { background: #eff6ff; }
+    .cargo-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 14px; cursor: pointer; accent-color: #3b82f6; }
+    .cargo-info { flex: 1; }
+    .track-code { font-weight: 600; color: #0f172a; margin-bottom: 2px; }
+    .flight-name { font-size: 11px; color: #64748b; }
+    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #fef3c7; color: #d97706; }
+    .selected-table { width: 100%; border-collapse: collapse; }
+    .selected-table th, .selected-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .selected-table th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 13px; }
+    .selected-table td input { width: 100px; padding: 8px; border-radius: 10px; border: 1px solid #cbd5e1; text-align: center; }
+    .remove-cargo { color: #ef4444; cursor: pointer; font-weight: bold; font-size: 16px; background: none; border: none; }
+    .summary-box { margin-top: 20px; padding: 16px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .btn { padding: 12px 28px; border: none; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .btn-success { background: #10b981; color: white; }
+    .btn-success:hover { background: #059669; transform: translateY(-1px); }
+    .image-preview { max-width: 100%; max-height: 150px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
+    .alert { padding: 14px 18px; border-radius: 16px; margin-top: 20px; }
+    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+    .empty-state { text-align: center; padding: 40px; color: #64748b; }
+    .group-table { width: 100%; border-collapse: collapse; }
+    .group-table th, .group-table td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .group-table th { background: #f1f5f9; font-weight: 600; color: #334155; font-size: 13px; }
+    .group-table tr:hover { background: #f8fafc; }
+    .badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+    .badge-pending { background: #fef3c7; color: #d97706; }
+    .grid-2 { display: flex; gap: 24px; flex-wrap: wrap; }
+    .grid-2 > * { flex: 1; min-width: 300px; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="group-container">
-    <h1>📦 Yuklarni Guruhga Qo'shish</h1>
-    
-    <div class="row">
-        <!-- Chap tomon: Foydalanuvchi va Reys -->
-        <div class="col">
-            <div class="card">
-                <div class="card-header">1️⃣ Foydalanuvchi tanlang</div>
-                <div class="card-body">
+<div class="container">
+    <h1 style="margin-bottom: 24px;">🏪 Punktga qabul boshqaruvi</h1>
+
+    <!-- Yangi guruh yaratish -->
+    <div class="card">
+        <div class="card-header">➕ Yangi guruh yaratish</div>
+        <div class="card-body">
+            <div class="grid-2">
+                <div>
                     <div class="form-group">
                         <label>👤 Foydalanuvchi</label>
                         <select id="userSelect">
-                            <option value="">-- Foydalanuvchi tanlang --</option>
+                            <option value="">-- Tanlang --</option>
                         </select>
                     </div>
-                </div>
-            </div>
-            
-            <div class="card" id="flightCard" style="display: none;">
-                <div class="card-header">2️⃣ Reys tanlang</div>
-                <div class="card-body">
-                    <div class="form-group">
+                    <div class="form-group" id="flightGroup" style="display: none;">
                         <label>✈️ Reys</label>
                         <select id="flightSelect">
-                            <option value="">-- Reys tanlang --</option>
+                            <option value="">-- Tanlang --</option>
                         </select>
                     </div>
-                </div>
-            </div>
-            
-            <div class="card" id="groupCard" style="display: none;">
-                <div class="card-header">3️⃣ Guruh ma'lumotlari</div>
-                <div class="card-body">
                     <div class="form-group">
-                        <label>📋 Res kodi</label>
-                        <input type="text" id="receiptCode" placeholder="Masalan: RES-2026-001">
+                        <label>🖼 Guruh rasmi</label>
+                        <input type="file" id="groupImage" accept="image/*">
+                        <div id="imagePreview"></div>
                     </div>
                 </div>
-            </div>
-        </div>
-        
-        <!-- O'ng tomon: Yuklar ro'yxati -->
-        <div class="col">
-            <div class="card" id="cargosCard" style="display: none;">
-                <div class="card-header">
-                    3️⃣ Yuklar ro'yxati
-                    <span id="selectedCount" class="selected-count" style="float: right;">0 ta tanlangan</span>
-                </div>
-                <div class="card-body">
+                <div id="cargosGroup" style="display: none;">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="🔍 Trek kodi bo‘yicha qidirish">
+                    </div>
                     <div id="cargosList" class="cargo-list">
-                        <div style="padding: 20px; text-align: center; color: #9aa0a6;">
-                            ⏳ Yuklar yuklanmoqda...
-                        </div>
+                        <div class="empty-state">Avval foydalanuvchi va reysni tanlang</div>
                     </div>
                 </div>
             </div>
+
+            <!-- Tanlangan yuklar jadvali -->
+            <div id="selectedSection" style="display: none; margin-top: 24px;">
+                <h3 style="margin-bottom: 12px;">✅ Tanlangan yuklar</h3>
+                <div style="overflow-x: auto;">
+                    <table class="selected-table">
+                        <thead><tr><th>Trek kod</th><th>Reys</th><th>Og'irlik (kg)</th><th>Narxi (so'm)</th><th></th></tr></thead>
+                        <tbody id="selectedTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="summary-box">
+                    <span>📦 Jami og‘irlik: <strong id="totalWeight">0</strong> kg</span>
+                    <span>💰 Jami summa: <strong id="totalPrice">0</strong> so‘m</span>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; text-align: right;">
+                <button id="createGroupBtn" class="btn btn-success">✓ Guruh yaratish</button>
+            </div>
+            <div id="result"></div>
         </div>
     </div>
-    
-    <div class="card" id="createCard" style="display: none;">
-        <div class="card-body" style="text-align: right;">
-            <button id="createGroupBtn" class="btn-success">✅ Guruh yaratish</button>
+
+    <!-- Guruhlar ro'yxati -->
+    <div class="card">
+        <div class="card-header">📋 Guruhlar ro'yxati</div>
+        <div class="card-body">
+            <div style="overflow-x: auto;">
+                <table class="group-table">
+                    <thead><tr><th>ID</th><th>Res kodi (Reys)</th><th>Foydalanuvchi</th><th>Rasm</th><th>Jami og'irlik</th><th>Jami summa</th><th>To'lov holati</th><th>Yetkazish usuli</th><th>Manzil</th><th>Yaratilgan</th><th></th></tr></thead>
+                    <tbody id="groupsList"><tr><td colspan="11" class="empty-state">Yuklanmoqda...</td></tr></tbody>
+                </table>
+            </div>
         </div>
     </div>
-    
-    <div id="result"></div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     let selectedUser = null;
-    let selectedFlight = null;
-    let selectedCargos = new Set();
-    let cargosData = [];
-    
-    // Foydalanuvchilarni yuklash
+    let selectedCargos = new Map(); // id -> {track_code, flight_name, weight, price}
+    let allCargos = [];
+
     function loadUsers() {
         $.get('/admin/warehouse/arrivedgroup/api/users/', function(users) {
             const select = $('#userSelect');
-            select.empty();
-            select.append('<option value="">-- Foydalanuvchi tanlang --</option>');
-            users.forEach(user => {
-                select.append(`<option value="${user.id}">${user.name} (${user.user_id}) - ${user.phone}</option>`);
-            });
+            select.empty().append('<option value="">-- Foydalanuvchi tanlang --</option>');
+            users.forEach(user => select.append(`<option value="${user.id}">${user.name} (${user.user_id}) - ${user.phone}</option>`));
         });
     }
-    
-    // Foydalanuvchi tanlanganda
+
+    function loadGroups() {
+        $.get('/admin/warehouse/arrivedgroup/api/groups/', function(groups) {
+            const tbody = $('#groupsList');
+            if (!groups || groups.length === 0) { tbody.html('<tr><td colspan="11" class="empty-state">Hech qanday guruh mavjud emas</td></tr>'); return; }
+            tbody.empty();
+            groups.forEach(g => {
+                const statusClass = g.payment_status === 'To\'lov kutilmoqda' ? 'badge-pending' : '';
+                tbody.append(`
+                    <tr>
+                        <td>${g.id}</td>
+                        <td><strong>${g.receipt_code}</strong></td>
+                        <td>${g.user_name}<br><small>${g.user_id || ''}</small></td>
+                        <td>${g.image ? `<img src="${g.image}" style="width:40px;height:40px;object-fit:cover;border-radius:10px;">` : '—'}</td>
+                        <td>${parseFloat(g.total_weight).toFixed(2)} kg</td>
+                        <td>${parseInt(g.total_price).toLocaleString()} so'm</td>
+                        <td><span class="badge ${statusClass}">${g.payment_status}</span></td>
+                        <td>${g.delivery_method}</td>
+                        <td style="max-width:200px; white-space:nowrap; overflow-x:auto;">${g.delivery_address}</td>
+                        <td>${new Date(g.created_at).toLocaleString()}</td>
+                        <td><a href="/admin/warehouse/arrivedgroup/${g.id}/change/" target="_blank">✏️ Tahrirlash</a></td>
+                    </tr>
+                `);
+            });
+        }).fail(() => $('#groupsList').html('<tr><td colspan="11" class="empty-state">Xatolik yuz berdi</td></tr>'));
+    }
+
     $('#userSelect').change(function() {
         const userId = $(this).val();
-        if (!userId) {
-            $('#flightCard, #cargosCard').hide();
-            selectedUser = null;
-            return;
-        }
+        if (!userId) { $('#flightGroup, #cargosGroup, #selectedSection').hide(); selectedUser = null; return; }
         selectedUser = userId;
         loadFlights(userId);
-        $('#flightCard').show();
+        $('#flightGroup').show();
     });
-    
-    // Reyslarni yuklash
+
     function loadFlights(userId) {
         $.get(`/admin/warehouse/arrivedgroup/api/flights/${userId}/`, function(flights) {
             const select = $('#flightSelect');
-            select.empty();
-            select.append('<option value="">-- Reys tanlang --</option>');
-            flights.forEach(flight => {
-                select.append(`<option value="${flight}">✈️ ${flight}</option>`);
-            });
+            select.empty().append('<option value="">-- Reys tanlang --</option>');
+            flights.forEach(flight => select.append(`<option value="${flight}">✈️ ${flight}</option>`));
         });
     }
-    
-    // Reys tanlanganda
+
     $('#flightSelect').change(function() {
         const flightName = $(this).val();
-        if (!flightName || !selectedUser) {
-            $('#cargosCard, #groupCard, #createCard').hide();
-            selectedFlight = null;
-            return;
-        }
-        selectedFlight = flightName;
+        if (!flightName || !selectedUser) { $('#cargosGroup, #selectedSection').hide(); return; }
         loadCargos(selectedUser, flightName);
-        $('#cargosCard, #groupCard, #createCard').show();
+        $('#cargosGroup').show();
     });
-    
-    // Yuklarni yuklash
+
     function loadCargos(userId, flightName) {
-        $('#cargosList').html('<div style="padding: 20px; text-align: center;">⏳ Yuklar yuklanmoqda...</div>');
-        
+        $('#cargosList').html('<div class="empty-state">⏳ Yuklar yuklanmoqda...</div>');
         $.get(`/admin/warehouse/arrivedgroup/api/cargos/${userId}/${encodeURIComponent(flightName)}/`, function(cargos) {
-            cargosData = cargos;
-            selectedCargos.clear();
-            updateSelectedCount();
-            
-            if (cargos.length === 0) {
-                $('#cargosList').html('<div style="padding: 20px; text-align: center; color: #9aa0a6;">📭 Bu reysda yuklar yo\'q</div>');
-                return;
-            }
-            
-            const container = $('#cargosList');
-            container.empty();
-            
-            cargos.forEach(cargo => {
-                const html = `
-                    <div class="cargo-item" data-id="${cargo.id}">
-                        <input type="checkbox" class="cargo-checkbox" data-id="${cargo.id}">
-                        <div class="cargo-info">
-                            <div class="track-code">📦 ${cargo.track_code}</div>
-                            <div class="flight-name">✈️ ${cargo.flight_name}</div>
-                        </div>
-                        <span class="status-badge status-yolda">🚚 Yo'lda</span>
-                    </div>
-                `;
-                container.append(html);
-            });
-            
-            // Checkbox eventlari
-            $('.cargo-checkbox').change(function() {
-                const id = parseInt($(this).data('id'));
-                if ($(this).is(':checked')) {
-                    selectedCargos.add(id);
-                } else {
-                    selectedCargos.delete(id);
-                }
-                updateSelectedCount();
-                $(this).closest('.cargo-item').toggleClass('selected', $(this).is(':checked'));
-            });
-            
-            $('.cargo-item').click(function(e) {
-                if (e.target.type !== 'checkbox') {
-                    const checkbox = $(this).find('.cargo-checkbox');
-                    checkbox.prop('checked', !checkbox.prop('checked'));
-                    checkbox.trigger('change');
-                }
-            });
+            allCargos = cargos;
+            renderCargosList(cargos);
+            if (cargos.length === 0) $('#cargosList').html('<div class="empty-state">📭 Bu reysda yuklar yo\'q</div>');
         });
     }
-    
-    function updateSelectedCount() {
-        $('#selectedCount').text(`${selectedCargos.size} ta tanlangan`);
+
+    function renderCargosList(cargos) {
+        const container = $('#cargosList').empty();
+        const term = $('#searchInput').val().toLowerCase();
+        const filtered = cargos.filter(c => c.track_code.toLowerCase().includes(term));
+        if (filtered.length === 0) { container.html('<div class="empty-state">🔍 Trek kodi topilmadi</div>'); return; }
+        filtered.forEach(cargo => {
+            const checked = selectedCargos.has(cargo.id);
+            container.append(`
+                <div class="cargo-item ${checked ? 'selected' : ''}" data-id="${cargo.id}">
+                    <input type="checkbox" class="cargo-checkbox" data-id="${cargo.id}" ${checked ? 'checked' : ''}>
+                    <div class="cargo-info"><div class="track-code">📦 ${cargo.track_code}</div><div class="flight-name">✈️ ${cargo.flight_name}</div></div>
+                    <span class="status-badge">🚚 Yo'lda</span>
+                </div>
+            `);
+        });
+        $('.cargo-checkbox').off('change').on('change', function() {
+            const id = parseInt($(this).data('id'));
+            const cargo = allCargos.find(c => c.id === id);
+            if ($(this).is(':checked')) {
+                selectedCargos.set(id, { track_code: cargo.track_code, flight_name: cargo.flight_name, weight: 0, price: 0 });
+                $('#selectedSection').show();
+            } else {
+                selectedCargos.delete(id);
+                if (selectedCargos.size === 0) $('#selectedSection').hide();
+            }
+            renderCargosList(allCargos);
+            renderSelectedTable();
+            updateTotals();
+        });
+        $('.cargo-item').off('click').on('click', function(e) {
+            if (e.target.type !== 'checkbox') $(this).find('.cargo-checkbox').prop('checked', !$(this).find('.cargo-checkbox').prop('checked')).trigger('change');
+        });
     }
-    
-    // Guruh yaratish
+
+    function renderSelectedTable() {
+        const tbody = $('#selectedTableBody');
+        if (selectedCargos.size === 0) { tbody.html('<tr><td colspan="5" class="empty-state">Hech qanday yuk tanlanmagan</td></tr>'); return; }
+        tbody.empty();
+        selectedCargos.forEach((cargo, id) => {
+            tbody.append(`
+                <tr data-id="${id}">
+                    <td>📦 ${cargo.track_code}</td><td>✈️ ${cargo.flight_name}</td>
+                    <td><input type="number" class="weight-input" data-id="${id}" value="${cargo.weight || 0}" step="0.1" style="width:80px"></td>
+                    <td><input type="number" class="price-input" data-id="${id}" value="${cargo.price || 0}" step="1000" style="width:120px"></td>
+                    <td><button class="remove-cargo" data-id="${id}">✖</button></td>
+                </tr>
+            `);
+        });
+        $('.weight-input').off('change').on('change', function() { updateCargoField($(this).data('id'), 'weight', $(this).val()); });
+        $('.price-input').off('change').on('change', function() { updateCargoField($(this).data('id'), 'price', $(this).val()); });
+        $('.remove-cargo').off('click').on('click', function() {
+            selectedCargos.delete(parseInt($(this).data('id')));
+            if (selectedCargos.size === 0) $('#selectedSection').hide();
+            renderCargosList(allCargos);
+            renderSelectedTable();
+            updateTotals();
+        });
+    }
+
+    function updateCargoField(id, field, value) {
+        if (selectedCargos.has(id)) selectedCargos.get(id)[field] = parseFloat(value) || 0;
+        updateTotals();
+    }
+
+    function updateTotals() {
+        let w = 0, p = 0;
+        selectedCargos.forEach(c => { w += c.weight || 0; p += c.price || 0; });
+        $('#totalWeight').text(w.toFixed(2)); $('#totalPrice').text(p.toLocaleString());
+    }
+
+    $('#searchInput').on('keyup', () => renderCargosList(allCargos));
+    $('#groupImage').change(function(e) {
+        const file = e.target.files[0];
+        if (file) { const reader = new FileReader(); reader.onload = ev => $('#imagePreview').html(`<img src="${ev.target.result}" class="image-preview">`); reader.readAsDataURL(file); }
+        else $('#imagePreview').empty();
+    });
+
     $('#createGroupBtn').click(function() {
-        const receiptCode = $('#receiptCode').val().trim();
-        
-        if (!receiptCode) {
-            alert('Res kodini kiriting!');
-            return;
-        }
-        
-        if (selectedCargos.size === 0) {
-            alert('Hech qanday yuk tanlanmagan!');
-            return;
-        }
-        
-        const cargoIds = Array.from(selectedCargos);
-        
-        $('#createGroupBtn').prop('disabled', true).text('Yaratilmoqda...');
-        
+        const imageFile = $('#groupImage')[0].files[0];
+        const flightName = $('#flightSelect').val();
+        if (!flightName) return $('#result').html('<div class="alert alert-error">❌ Reysni tanlang</div>');
+        if (selectedCargos.size === 0) return $('#result').html('<div class="alert alert-error">❌ Hech qanday yuk tanlanmagan</div>');
+
+        const cargoIds = [], weights = [], prices = [];
+        selectedCargos.forEach((c, id) => {
+            cargoIds.push(id);
+            weights.push(c.weight || 0);
+            prices.push(c.price || 0);
+        });
+
+        const formData = new FormData();
+        formData.append('user_id', selectedUser);
+        formData.append('flight_name', flightName);
+        formData.append('cargo_ids', JSON.stringify(cargoIds));
+        formData.append('cargo_weights', JSON.stringify(weights));
+        formData.append('cargo_prices', JSON.stringify(prices));
+        if (imageFile) formData.append('image', imageFile);
+
+        const btn = $(this);
+        btn.prop('disabled', true).text('⏳ Yaratilmoqda...');
         $.ajax({
             url: '/admin/warehouse/arrivedgroup/api/create-group/',
             type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                user_id: selectedUser,
-                receipt_code: receiptCode,
-                cargo_ids: cargoIds
-            }),
+            data: formData,
+            processData: false,
+            contentType: false,
             success: function(res) {
-                $('#result').html(`
-                    <div class="alert alert-success">
-                        ✅ Guruh muvaffaqiyatli yaratildi! 
-                        <a href="/admin/warehouse/arrivedgroup/${res.group_id}/change/">Guruhni ko'rish</a>
-                    </div>
-                `);
-                // Formani tozalash
-                $('#receiptCode').val('');
-                $('#flightSelect').val('');
-                $('#cargosCard, #groupCard, #createCard').hide();
-                selectedCargos.clear();
-                selectedUser = null;
-                selectedFlight = null;
-                $('#userSelect').val('');
-                updateSelectedCount();
+                if (res.status === 'success') {
+                    $('#result').html(`<div class="alert alert-success">✅ ${res.message}</div>`);
+                    $('#groupImage').val('');
+                    $('#imagePreview').empty();
+                    $('#flightSelect').val('');
+                    selectedCargos.clear();
+                    $('#userSelect').val('');
+                    $('#cargosGroup, #selectedSection').hide();
+                    renderSelectedTable();
+                    updateTotals();
+                    loadUsers();
+                    loadGroups();
+                } else $('#result').html(`<div class="alert alert-error">❌ ${res.error}</div>`);
             },
-            error: function(err) {
-                $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${err.responseJSON?.error || 'Noma\'lum xatolik'}</div>`);
-            },
-            complete: function() {
-                $('#createGroupBtn').prop('disabled', false).text('✅ Guruh yaratish');
-            }
+            error: (err) => $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${err.responseJSON?.error || 'Noma\'lum'}</div>`),
+            complete: () => btn.prop('disabled', false).text('✓ Guruh yaratish')
         });
     });
-    
-    // Sahifa yuklanganda
-    $(document).ready(function() {
-        loadUsers();
-    });
+
+    loadUsers();
+    loadGroups();
 </script>
 {% endblock %}

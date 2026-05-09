@@ -1,13 +1,13 @@
+import json
 from django.contrib import admin
 from django.urls import path
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from django.db import transaction
 from cargo.models import Cargo
 from warehouse.models import ArrivedGroup, PaymentRequest, DeliveryQueue
 from accounts.models import User
@@ -15,25 +15,19 @@ from accounts.models import User
 
 @admin.register(ArrivedGroup)
 class ArrivedGroupAdmin(admin.ModelAdmin):
+    change_list_template = 'admin/warehouse/arrived_group_chat.html'
+
     list_display = ('receipt_code', 'user', 'payment_status', 'created_at')
     list_filter = ('payment_status', 'user')
     search_fields = ('receipt_code', 'user__phone', 'user__first_name')
     readonly_fields = ('display_group_image', 'display_payment_check', 'total_weight', 'total_price')
 
     fieldsets = (
-        ('Asosiy ma\'lumotlar', {
-            'fields': ('user', 'receipt_code', 'payment_status')
-        }),
-        ('Yuklar', {
-            'fields': ('selected_cargos',)
-        }),
-        ('To\'lov va Yetkazish', {
-            'fields': ('total_weight', 'total_price', 'image', 'payment_check', 'delivery_method', 'delivery_address')
-        }),
-        ('Admin ma\'lumotlari', {
-            'fields': ('admin_note', 'created_by', 'delivered_admin'),
-            'classes': ('collapse',)
-        }),
+        ('Asosiy ma\'lumotlar', {'fields': ('user', 'receipt_code', 'payment_status')}),
+        ('Yuklar', {'fields': ('selected_cargos',)}),
+        ('To\'lov va Yetkazish',
+         {'fields': ('total_weight', 'total_price', 'image', 'payment_check', 'delivery_method', 'delivery_address')}),
+        ('Admin ma\'lumotlari', {'fields': ('admin_note', 'created_by', 'delivered_admin'), 'classes': ('collapse',)}),
     )
 
     filter_horizontal = ('selected_cargos',)
@@ -55,7 +49,6 @@ class ArrivedGroupAdmin(admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
         custom_urls = [
-            path('create-group/', self.admin_site.admin_view(self.create_group_view), name='arrived_group_create'),
             path('api/users/', self.admin_site.admin_view(self.api_users), name='warehouse_api_users'),
             path('api/flights/<int:user_id>/', self.admin_site.admin_view(self.api_flights),
                  name='warehouse_api_flights'),
@@ -63,28 +56,14 @@ class ArrivedGroupAdmin(admin.ModelAdmin):
                  name='warehouse_api_cargos'),
             path('api/create-group/', self.admin_site.admin_view(self.api_create_group),
                  name='warehouse_api_create_group'),
+            path('api/groups/', self.admin_site.admin_view(self.api_groups), name='warehouse_api_groups'),
         ]
         return custom_urls + urls
 
-    def create_group_view(self, request):
-        context = {
-            'title': 'Yangi guruh yaratish',
-            'opts': self.model._meta,
-            'has_view_permission': True,
-            'has_add_permission': True,
-        }
-        return TemplateResponse(request, 'admin/warehouse/create_group.html', context)
-
     def api_users(self, request):
         users = User.objects.filter(is_staff=False).order_by('-date_joined')
-        data = []
-        for user in users:
-            data.append({
-                'id': user.id,
-                'name': f"{user.first_name} {user.last_name}".strip() or user.phone,
-                'phone': user.phone,
-                'user_id': user.user_id or 'ID yo\'q',
-            })
+        data = [{'id': u.id, 'name': f"{u.first_name} {u.last_name}".strip() or u.phone, 'user_id': u.user_id,
+                 'phone': u.phone} for u in users]
         return JsonResponse(data, safe=False)
 
     def api_flights(self, request, user_id):
@@ -94,82 +73,88 @@ class ArrivedGroupAdmin(admin.ModelAdmin):
         return JsonResponse(flights, safe=False)
 
     def api_cargos(self, request, user_id, flight_name):
-        cargos = Cargo.objects.filter(
-            user_id=user_id,
-            flight_name=flight_name,
-            status="Yo'lda"
-        ).values('id', 'track_code', 'flight_name', 'status')
-        return JsonResponse(list(cargos), safe=False)
+        cargos = Cargo.objects.filter(user_id=user_id, flight_name=flight_name, status="Yo'lda").values('id',
+                                                                                                        'track_code',
+                                                                                                        'flight_name')
+        data = [{'id': c['id'], 'track_code': c['track_code'], 'flight_name': c['flight_name']} for c in cargos]
+        return JsonResponse(data, safe=False)
+
+    def api_groups(self, request):
+        groups = ArrivedGroup.objects.all().order_by('-created_at')
+        data = []
+        for g in groups:
+            data.append({
+                'id': g.id,
+                'receipt_code': g.receipt_code,
+                'user_name': str(g.user),
+                'user_id': g.user.user_id,
+                'image': g.image.url if g.image else None,
+                'total_weight': float(g.total_weight),
+                'total_price': float(g.total_price),
+                'payment_status': g.payment_status,
+                'delivery_method': g.delivery_method or '—',
+                'delivery_address': g.delivery_address or '—',
+                'created_at': g.created_at.isoformat(),
+            })
+        return JsonResponse(data, safe=False)
 
     @method_decorator(csrf_exempt)
     def api_create_group(self, request):
         if request.method == 'POST':
-            import json
-            data = json.loads(request.body)
-            user_id = data.get('user_id')
-            receipt_code = data.get('receipt_code')
-            cargo_ids = data.get('cargo_ids', [])
-
-            if not user_id or not receipt_code:
-                return JsonResponse({'error': 'Foydalanuvchi va Res kod kiritilishi shart'}, status=400)
-
-            if not cargo_ids:
-                return JsonResponse({'error': 'Hech qanday yuk tanlanmagan'}, status=400)
-
             try:
-                with transaction.atomic():
-                    user = get_object_or_404(User, id=user_id)
+                image = request.FILES.get('image')
+                cargo_ids = json.loads(request.POST.get('cargo_ids', '[]'))
+                user_id = request.POST.get('user_id')
+                flight_name = request.POST.get('flight_name')  # Reys nomi
 
-                    # Tanlangan yuklarni olish
-                    cargos = Cargo.objects.filter(id__in=cargo_ids, status="Yo'lda")
+                # Og'irlik va narxlarni olish
+                cargo_weights = json.loads(request.POST.get('cargo_weights', '[]'))
+                cargo_prices = json.loads(request.POST.get('cargo_prices', '[]'))
 
-                    if not cargos.exists():
-                        return JsonResponse({'error': 'Tanlangan yuklar topilmadi yoki ular Yo\'lda emas'}, status=400)
+                user = get_object_or_404(User, id=user_id)
+                cargos = Cargo.objects.filter(id__in=cargo_ids, status="Yo'lda")
 
-                    # Jami og'irlik va summani hisoblash (agar mavjud bo'lsa)
-                    total_weight = sum(float(c.weight or 0) for c in cargos)
-                    total_price = sum(float(c.price or 0) for c in cargos)
+                if not cargos.exists():
+                    return JsonResponse({'error': 'Tanlangan yuklar topilmadi'}, status=400)
 
-                    # Guruh yaratish
-                    group = ArrivedGroup.objects.create(
-                        user=user,
-                        receipt_code=receipt_code,
-                        total_weight=total_weight,
-                        total_price=total_price,
-                        created_by=request.user,
-                        payment_status='To\'lov kutilmoqda'
-                    )
+                # Yuklarni og'irlik va narxlarini yangilash (agar modelda weight/price bo'lsa)
+                total_weight = 0
+                total_price = 0
+                for i, cargo in enumerate(cargos):
+                    w = float(cargo_weights[i]) if i < len(cargo_weights) else 0
+                    p = float(cargo_prices[i]) if i < len(cargo_prices) else 0
+                    total_weight += w
+                    total_price += p
 
-                    # Yuklarni qo'shish
-                    group.selected_cargos.set(cargos)
+                    # Agar Cargo modelida weight va price maydonlari bo'lsa
+                    # cargo.weight = w
+                    # cargo.price = p
+                    # cargo.save()
 
-                    # Statusni 'Punktda' ga o'zgartirish
-                    cargos.update(status='Punktda', arrived_group=group, arrived_admin=request.user)
+                # Receipt code sifatida reys nomini ishlatamiz
+                receipt_code = flight_name
 
-                    return JsonResponse({
-                        'status': 'success',
-                        'group_id': group.id,
-                        'message': f'Guruh muvaffaqiyatli yaratildi! {len(cargo_ids)} ta yuk qo\'shildi.'
-                    })
+                group = ArrivedGroup.objects.create(
+                    user=user,
+                    receipt_code=receipt_code,
+                    total_weight=total_weight,
+                    total_price=total_price,
+                    image=image,
+                    created_by=request.user,
+                    payment_status='To\'lov kutilmoqda'
+                )
+
+                group.selected_cargos.set(cargos)
+                cargos.update(status='Punktda', arrived_group=group, arrived_admin=request.user)
+
+                return JsonResponse({
+                    'status': 'success',
+                    'group_id': group.id,
+                    'message': f'{len(cargo_ids)} ta yuk guruhga qo\'shildi | ⚖ {total_weight} kg | 💰 {total_price:,.0f} so\'m'
+                })
             except Exception as e:
                 return JsonResponse({'error': str(e)}, status=500)
-
         return JsonResponse({'error': 'Method not allowed'}, status=405)
-
-    def save_related(self, request, form, formsets, change):
-        super().save_related(request, form, formsets, change)
-        obj = form.instance
-        if not change:
-            obj.selected_cargos.all().update(
-                status='Punktda',
-                arrived_group=obj,
-                arrived_admin=request.user
-            )
-
-    def save_model(self, request, obj, form, change):
-        if not obj.pk:
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
 
 
 @admin.register(PaymentRequest)
