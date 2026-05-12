@@ -10,7 +10,46 @@ from accounts.models import User
 from .models import Cargo, WarehouseCargo, OnWayCargo, ArrivedCargo, DeliveredCargo
 
 
-# --- 1. Optimallashtirilgan Resource ---
+# --- Transport turini aniqlash ---
+def get_transport_type_from_id(id_value):
+    """
+    ID dan transport turini aniqlaydi
+    UT-0102 -> Avia
+    A-0102 -> Avto
+    """
+    if not id_value:
+        return None
+
+    trek_str = str(id_value).strip().upper()
+
+    # Agar trek raqamda A yoki UT bo'lsa
+    if 'A' in trek_str or trek_str.startswith('A'):
+        return 'AVIA'
+    elif 'UT' in trek_str or trek_str.startswith('UT'):
+        return 'AVTO'
+    else:
+        return None
+
+
+def extract_number_from_id(id_value):
+    """
+    ID dan faqat raqamli qismni ajratib oladi
+    UT-0102 -> 0102
+    A-0102 -> 0102
+    UTS-0102 -> 0102
+    """
+    if not id_value:
+        return None
+
+    id_str = str(id_value).strip()
+    # Faqat raqamlarni topish
+    match = re.search(r'(\d+)', id_str)
+    if match:
+        return match.group(1)
+    return None
+
+
+# --- Optimallashtirilgan Resource ---
 class CargoResource(resources.ModelResource):
     # Import qilishda ishlatiladigan maydonlar
     track_code = Field(attribute='track_code', column_name='TREK RAQAM')
@@ -20,7 +59,6 @@ class CargoResource(resources.ModelResource):
 
     class Meta:
         model = Cargo
-        # import_id_fields ni bo'sh qilib qo'yamiz, chunki trek code orqali tekshirishni o'zimiz qilamiz
         import_id_fields = ()
         fields = ('track_code', 'flight_name', 'created_at', 'status', 'user')
         skip_unchanged = True
@@ -29,59 +67,47 @@ class CargoResource(resources.ModelResource):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._user_cache = {}  # Foydalanuvchi cache'i
-        self._skipped_rows = []  # O'tkazib yuborilgan qatorlar
+        self._user_cache = {}
+        self._pending_cargos = []  # Foydalanuvchisi topilmagan yuklar
         self._imported_count = 0
-        self._skipped_count = 0
-        self.request = None  # Request ni saqlash uchun
+        self._pending_count = 0
+        self.request = None
 
     def get_import_id_fields(self):
-        """Import ID fieldlarini qaytarish - bo'sh list qaytaramiz"""
         return []
 
-    def _extract_uts_number(self, id_value):
+    def _find_user_by_number(self, number):
         """
-        ID dan faqat raqamli qismni ajratib oladi
-        UT-002 -> 002
-        A-002 -> 002
-        UTS-002 -> 002
+        Raqam bo'yicha foydalanuvchini topadi
+        Misol: 0102 raqami bilan UTS-0102, UTS0102, UT-0102, A-0102 formatlarini qidiradi
         """
-        if not id_value:
-            return None
-
-        id_str = str(id_value).strip()
-        # Faqat raqamlarni topish (oxirgi 3-4 raqam)
-        match = re.search(r'(\d{3,4})$', id_str)
-        if match:
-            return match.group(1)
-        return None
-
-    def _get_user_by_uts(self, uts_number):
-        """
-        UTS raqami bo'yicha foydalanuvchini topadi
-        """
-        if not uts_number:
+        if not number:
             return None
 
         # Cache'dan tekshirish
-        if uts_number in self._user_cache:
-            return self._user_cache[uts_number]
+        if number in self._user_cache:
+            return self._user_cache[number]
 
-        # UTS-### formatida qidirish
         user = None
 
-        # Bir nechta formatlarda qidirish
+        # Turli formatlarda qidirish
         patterns = [
-            f"UTS-{uts_number}",
-            f"UTS{uts_number}",
-            f"UTS {uts_number}",
+            f"UTS-{number}",
+            f"UTS{number}",
+            f"UTS {number}",
+            f"UT-{number}",
+            f"UT{number}",
+            f"A-{number}",
+            f"A{number}",
         ]
 
-        # Agar 3 xonali bo'lsa, 4 xonali formatda ham qidirish
-        if len(uts_number) == 3:
+        # 3 xonali raqam bo'lsa, 4 xonali formatda ham qidirish
+        if len(number) == 3:
             patterns.extend([
-                f"UTS-0{uts_number}",
-                f"UTS0{uts_number}",
+                f"UTS-0{number}",
+                f"UTS0{number}",
+                f"UT-0{number}",
+                f"A-0{number}",
             ])
 
         for pattern in patterns:
@@ -91,27 +117,25 @@ class CargoResource(resources.ModelResource):
 
         # Agar topilmasa, raqamni o'z ichiga olganlarni qidirish
         if not user:
-            user = User.objects.filter(user_id__icontains=uts_number).first()
+            user = User.objects.filter(user_id__icontains=number).first()
 
         # Cache'ga saqlash
-        self._user_cache[uts_number] = user
+        self._user_cache[number] = user
         return user
 
     def before_import(self, dataset, **kwargs):
         """Import boshlanishida statistikani tozalash"""
         self._user_cache = {}
-        self._skipped_rows = []
+        self._pending_cargos = []
         self._imported_count = 0
-        self._skipped_count = 0
+        self._pending_count = 0
 
         # Datasetni tozalash - bo'sh qatorlarni olib tashlash
         rows_to_remove = []
         for i, row in enumerate(dataset.dict):
-            # Agar barcha ustunlar bo'sh bo'lsa, qatorni olib tashlash
             if all(not str(v).strip() or str(v).strip().lower() in ['none', 'null', ''] for v in row.values()):
                 rows_to_remove.append(i)
 
-        # Bo'sh qatorlarni orqadan olib tashlash
         for i in reversed(rows_to_remove):
             del dataset[i]
 
@@ -127,11 +151,6 @@ class CargoResource(resources.ModelResource):
 
             # Agar trek kod bo'sh bo'lsa, qatorni o'tkazib yuborish
             if not track_code or track_code.lower() in ['none', 'null', '']:
-                self._skipped_count += 1
-                self._skipped_rows.append({
-                    'track_code': track_code,
-                    'reason': 'Trek kodi bo\'sh'
-                })
                 return False
 
             # Reys nomi
@@ -141,66 +160,60 @@ class CargoResource(resources.ModelResource):
             else:
                 flight_name = 'R-125'
 
-            # ID (UT-002 yoki A-002)
+            # ID (UT-0102 yoki A-0102)
             id_value = row.get('ID', '')
             if id_value:
                 id_value = str(id_value).strip()
 
-            uts_number = self._extract_uts_number(id_value)
+            # Raqamni ajratib olish
+            number = extract_number_from_id(id_value)
+
+            # Transport turini aniqlash
+            transport_type = get_transport_type_from_id(id_value)
 
             # Foydalanuvchini topish
             user = None
-            if uts_number:
-                user = self._get_user_by_uts(uts_number)
-
-            # Agar foydalanuvchi topilmasa, bu qatorni o'tkazib yuborish
-            if not user:
-                self._skipped_count += 1
-                self._skipped_rows.append({
-                    'track_code': track_code,
-                    'id_value': id_value,
-                    'uts_number': uts_number,
-                    'reason': f'Foydalanuvchi topilmadi (ID: {id_value})'
-                })
-                return False
+            if number:
+                user = self._find_user_by_number(number)
 
             # Sana
             created_at = row.get('OMBORDA', '')
-            if created_at:
-                created_at = str(created_at).strip()
-            else:
-                created_at = str(timezone.now())
+            if not created_at or str(created_at).strip() in ['', 'None', 'null']:
+                created_at = timezone.now()
 
-            # Row ma'lumotlarini to'ldirish
             row['track_code'] = track_code
             row['flight_name'] = flight_name
-            row['user'] = user.pk
             row['created_at'] = created_at
-            row['status'] = 'Omborda'
 
-            self._imported_count += 1
-            return True
+            # ✅ Foydalanuvchi topilsa - bog'laymiz, topilmasa - user = None qoldiramiz
+            if user:
+                row['user'] = user.pk
+                row['status'] = 'Omborda'
+                self._imported_count += 1
+            else:
+                # ✅ Foydalanuvchi topilmadi - user = None, status "Kutilmoqda"
+                row['user'] = None  # null bo'lishi mumkin
+                row['status'] = 'Kutilmoqda'
+                self._pending_count += 1
+                self._pending_cargos.append({
+                    'track_code': track_code,
+                    'id_value': id_value,
+                    'number': number,
+                    'transport_type': transport_type,
+                })
+
+            return True  # ✅ Har doim True qaytaramiz, hech qanday qatorni o'tkazib yubormaymiz
 
         except Exception as e:
-            self._skipped_count += 1
-            self._skipped_rows.append({
-                'row': row,
-                'error': str(e),
-                'reason': f'Xatolik: {str(e)}'
-            })
-            return False
+            print(f"Qatorni qayta ishlashda xatolik: {e}")
+            return False  # Faqat xatolik bo'lsa o'tkazib yuboramiz
 
     def skip_row(self, instance, original, row, import_validation_errors=None):
         """Qatorni o'tkazib yuborish kerakligini tekshirish"""
-        # Agar user mavjud bo'lmasa, o'tkazib yuborish
-        if row.get('user') is None:
-            return True
-        return False
+        return False  # Hech qanday qatorni o'tkazib yubormaymiz
 
     def get_instance(self, instance_loader, row):
-        """
-        Mavjud instanceni topish - track_code bo'yicha qidiramiz
-        """
+        """Mavjud instanceni topish - track_code bo'yicha qidiramiz"""
         track_code = row.get('track_code')
         if track_code:
             try:
@@ -210,8 +223,8 @@ class CargoResource(resources.ModelResource):
         return None
 
     def before_save_instance(self, instance, row, **kwargs):
-        """Instanceni saqlashdan oldin admin ma'lumotlarini biriktirish"""
-        if self.request:
+        """Instanceni saqlashdan oldin"""
+        if self.request and instance.user:
             if not instance.pk:  # Yangi yuk
                 instance.created_by = self.request.user
                 instance.warehouse_admin = self.request.user
@@ -219,23 +232,23 @@ class CargoResource(resources.ModelResource):
 
     def after_import(self, dataset, result, **kwargs):
         """Import tugagach, natijalarni chiqarish"""
-        # Hech qanday o'zgartirish qilmaymiz, faqat xabarni chiqaramiz
-        if self._skipped_rows:
-            print(f"\n{'=' * 50}")
-            print(f"IMPORT NATIJALARI:")
-            print(f"  Muvaffaqiyatli import: {self._imported_count} ta")
-            print(f"  O'tkazib yuborilgan: {self._skipped_count} ta")
-            print(f"{'=' * 50}")
+        message = f"""
+        ╔══════════════════════════════════════════════════════════╗
+        ║                    IMPORT NATIJALARI                      ║
+        ╠══════════════════════════════════════════════════════════╣
+        ║  ✅ Muvaffaqiyatli import qilingan: {self._imported_count} ta yuk
+        ║  ⏳ Kutilayotgan yuklar (foydalanuvchi topilmadi): {self._pending_count} ta yuk
+        ╚══════════════════════════════════════════════════════════╝
+        """
+        print(message)
 
-            if self._skipped_rows:
-                print("\nO'tkazib yuborilgan qatorlar sabablari:")
-                reasons = {}
-                for skipped in self._skipped_rows:
-                    reason = skipped.get('reason', 'Noma\'lum sabab')
-                    reasons[reason] = reasons.get(reason, 0) + 1
-
-                for reason, count in reasons.items():
-                    print(f"  - {reason}: {count} ta")
+        if self._pending_cargos:
+            print("\n⚠️ Foydalanuvchisi topilmagan yuklar:")
+            for cargo in self._pending_cargos[:10]:  # Faqat birinchi 10 ta
+                print(
+                    f"   📦 {cargo['track_code']} | ID: {cargo['id_value']} | Raqam: {cargo['number']} | Tur: {cargo.get('transport_type', '-')}")
+            if len(self._pending_cargos) > 10:
+                print(f"   ... va {len(self._pending_cargos) - 10} ta yuk")
 
 
 # --- 2. Asosiy Admin klassi ---
@@ -243,8 +256,8 @@ class BaseCargoAdmin(ImportExportModelAdmin):
     resource_class = CargoResource
 
     list_display = (
-        'track_code', 'display_uts_id', 'flight_name',
-        'colored_status', 'created_at', 'get_responsible_admin'
+        'track_code', 'display_user_info', 'flight_name',
+        'colored_status', 'created_at', 'get_transport_badge', 'get_responsible_admin'
     )
 
     list_filter = ('status', 'flight_name', 'created_at')
@@ -258,34 +271,61 @@ class BaseCargoAdmin(ImportExportModelAdmin):
     def get_resource_kwargs(self, request, *args, **kwargs):
         """Resource ga request ni uzatish"""
         kwargs = super().get_resource_kwargs(request, *args, **kwargs)
-        # Resource klassiga request ni biriktirish
         self.resource_class.request = request
         return kwargs
 
-    def display_uts_id(self, obj):
-        """UTS ID ni chiroyli ko'rsatish"""
-        if obj.user and obj.user.user_id:
+    def display_user_info(self, obj):
+        """Foydalanuvchi ma'lumotlarini chiroyli ko'rsatish"""
+        if obj.user:
             return format_html(
-                '<span style="font-weight: bold; background-color: #f0f0f0; '
-                'padding: 2px 8px; border-radius: 4px;">{}</span>',
-                obj.user.user_id
+                '<span style="font-weight: bold; background-color: #e8f4fd; padding: 2px 8px; border-radius: 4px;">'
+                '👤 {}<br><span style="font-size: 11px; color: #666;">({})</span></span>',
+                obj.user.user_id if obj.user.user_id else '-',
+                obj.user.get_full_name() or obj.user.phone or '-'
             )
-        return format_html('<span style="color: #e74c3c;">-</span>')
+        else:
+            return format_html(
+                '<span style="color: #e74c3c; background-color: #fef5f5; padding: 2px 8px; border-radius: 4px;">'
+                '⚠️ Foydalanuvchi topilmadi<br><span style="font-size: 10px;">Kutilmoqda</span></span>'
+            )
 
-    display_uts_id.short_description = "UTS ID"
+    display_user_info.short_description = "Foydalanuvchi"
+
+    def get_transport_badge(self, obj):
+        """Transport turini badge ko'rinishida ko'rsatish"""
+        if obj.user and obj.user.user_id:
+            user_id = obj.user.user_id.upper()
+            if 'UT' in user_id:
+                return format_html(
+                    '<span style="background-color: #3498db; color: white; padding: 3px 10px; '
+                    'border-radius: 12px; font-size: 11px;">✈️ AVIA</span>'
+                )
+            elif 'A' in user_id:
+                return format_html(
+                    '<span style="background-color: #e67e22; color: white; padding: 3px 10px; '
+                    'border-radius: 12px; font-size: 11px;">🚚 AVTO</span>'
+                )
+        return format_html(
+            '<span style="background-color: #95a5a6; color: white; padding: 3px 10px; '
+            'border-radius: 12px; font-size: 11px;">❓ ANIQLANMAGAN</span>'
+        )
+
+    get_transport_badge.short_description = "Transport"
 
     def colored_status(self, obj):
         """Statusni rangli ko'rsatish"""
         colors = {
-            'Omborda': '#f39c12',  # To'q sariq
-            'Yo\'lda': '#3498db',  # Moviy
-            'Punktda': '#9b59b6',  # Siyohrang
-            'Topshirildi': '#27ae60'  # Yashil
+            'Omborda': '#f39c12',
+            'Yo\'lda': '#3498db',
+            'Punktda': '#9b59b6',
+            'Topshirildi': '#27ae60',
+            'Kutilmoqda': '#e74c3c'  # Yangi status
         }
         return format_html(
             '<span style="background-color: {}; color: white; padding: 5px 12px; '
-            'border-radius: 20px; font-weight: bold; font-size: 11px; display: inline-block;">{}</span>',
-            colors.get(obj.status, '#95a5a6'), obj.status
+            'border-radius: 20px; font-weight: bold; font-size: 11px; display: inline-block;">{}',
+            colors.get(obj.status, '#95a5a6'),
+            obj.status
         )
 
     colored_status.short_description = "Holati"
@@ -296,42 +336,45 @@ class BaseCargoAdmin(ImportExportModelAdmin):
             'Omborda': obj.warehouse_admin,
             'Yo\'lda': obj.onway_admin,
             'Punktda': obj.arrived_admin,
-            'Topshirildi': obj.delivered_admin
+            'Topshirildi': obj.delivered_admin,
+            'Kutilmoqda': None
         }
 
         admin = admin_map.get(obj.status)
         if admin:
             name = admin.get_full_name() or admin.first_name or str(admin.phone) or admin.username
-            return format_html(
-                '<span style="color: #2c3e50;">👤 {}</span>',
-                name[:30]  # Uzun nomlarni kesish
-            )
+            return format_html('<span style="color: #2c3e50;">👤 {}</span>', name[:30])
+        elif obj.status == 'Kutilmoqda':
+            return format_html('<span style="color: #e74c3c;">⏳ Foydalanuvchi kutilmoqda</span>')
         return format_html('<span style="color: #bdc3c7;">⚪ Belgilanmagan</span>')
 
     get_responsible_admin.short_description = "Mas'ul Admin"
 
     def save_model(self, request, obj, form, change):
         """Modelni saqlashda adminlarni avtomatik belgilash"""
-        if not change:
+        if not change and obj.user:
             obj.created_by = request.user
 
-        # Status o'zgargan bo'lsa, tegishli adminni yozish
-        if 'status' in form.changed_data or not change:
-            if obj.status == 'Omborda':
-                obj.warehouse_admin = request.user
-            elif obj.status == 'Yo\'lda':
-                obj.onway_admin = request.user
-            elif obj.status == 'Punktda':
-                obj.arrived_admin = request.user
-            elif obj.status == 'Topshirildi':
-                obj.delivered_admin = request.user
-                obj.delivered_at = timezone.now()
+        if obj.user:
+            if 'status' in form.changed_data or not change:
+                if obj.status == 'Omborda':
+                    obj.warehouse_admin = request.user
+                elif obj.status == 'Yo\'lda':
+                    obj.onway_admin = request.user
+                elif obj.status == 'Punktda':
+                    obj.arrived_admin = request.user
+                elif obj.status == 'Topshirildi':
+                    obj.delivered_admin = request.user
+                    obj.delivered_at = timezone.now()
 
-        obj.updated_by = request.user
+            obj.updated_by = request.user
+        else:
+            # Foydalanuvchisi yo'q yuklar uchun
+            obj.status = 'Kutilmoqda'
+
         super().save_model(request, obj, form, change)
 
     def get_import_formats(self):
-        """Import formatlarini belgilash"""
         from import_export.formats.base_formats import XLSX, CSV
         return [XLSX, CSV]
 
@@ -340,18 +383,9 @@ class BaseCargoAdmin(ImportExportModelAdmin):
 @admin.register(Cargo)
 class AllCargoAdmin(BaseCargoAdmin):
     """Barcha yuklar"""
-    list_display = BaseCargoAdmin.list_display + ('get_transport_type',)
 
-    def get_transport_type(self, obj):
-        """Transport turini aniqlash"""
-        if obj.user and obj.user.user_id:
-            if 'UT' in obj.user.user_id.upper():
-                return '✈️ Avia'
-            if 'A' in obj.user.user_id.upper():
-                return '🚚 Avto'
-        return '-'
-
-    get_transport_type.short_description = 'Transport turi'
+    def get_queryset(self, request):
+        return super().get_queryset(request)
 
 
 @admin.register(WarehouseCargo)
@@ -365,7 +399,6 @@ class WarehouseCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="🚚 Yo'lga chiqarish")
     def make_onway(self, request, queryset):
-        """Yuklarni yo'lga chiqarish"""
         updated = queryset.update(
             status='Yo\'lda',
             onway_admin=request.user,
@@ -385,7 +418,6 @@ class OnWayCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="📍 Punktga yetkazish")
     def make_arrived(self, request, queryset):
-        """Yuklarni punktga yetkazish"""
         updated = queryset.update(
             status='Punktda',
             arrived_admin=request.user,
@@ -405,7 +437,6 @@ class ArrivedCargoAdmin(BaseCargoAdmin):
 
     @admin.action(description="✅ Topshirildi")
     def make_delivered(self, request, queryset):
-        """Yuklarni topshirilgan deb belgilash"""
         updated = queryset.update(
             status='Topshirildi',
             delivered_admin=request.user,

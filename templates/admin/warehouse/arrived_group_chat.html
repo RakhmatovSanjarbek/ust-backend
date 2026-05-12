@@ -1,7 +1,10 @@
+<!-- arrived_group_chat.html (to'liq o'zgartirilgan va tuzatilgan) -->
 {% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block extrastyle %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #f5f7fa; }
@@ -13,9 +16,7 @@
     label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
     select, input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; transition: all 0.2s; background: white; }
     select:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .search-box { margin-bottom: 16px; }
-    .search-box input { padding-left: 36px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="%2364748b" stroke-width="2"><circle cx="10" cy="10" r="7"/><line x1="15" y1="15" x2="22" y2="22"/></svg>') no-repeat 12px center; background-size: 16px; }
-    .cargo-list { max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; }
+    .cargo-list { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; }
     .cargo-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
     .cargo-item:hover { background: #f8fafc; }
     .cargo-item.selected { background: #eff6ff; }
@@ -24,15 +25,15 @@
     .track-code { font-weight: 600; color: #0f172a; margin-bottom: 2px; }
     .flight-name { font-size: 11px; color: #64748b; }
     .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #fef3c7; color: #d97706; }
-    .selected-table { width: 100%; border-collapse: collapse; }
-    .selected-table th, .selected-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    .selected-table th { background: #f8fafc; font-weight: 600; color: #475569; font-size: 13px; }
-    .selected-table td input { width: 100px; padding: 8px; border-radius: 10px; border: 1px solid #cbd5e1; text-align: center; }
-    .remove-cargo { color: #ef4444; cursor: pointer; font-weight: bold; font-size: 16px; background: none; border: none; }
-    .summary-box { margin-top: 20px; padding: 16px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+    .selected-info { margin-top: 24px; padding: 20px; background: #f8fafc; border-radius: 16px; }
+    .summary-box { margin-top: 16px; padding: 16px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
     .btn { padding: 12px 28px; border: none; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
     .btn-success { background: #10b981; color: white; }
     .btn-success:hover { background: #059669; transform: translateY(-1px); }
+    .btn-secondary { background: #64748b; color: white; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
     .image-preview { max-width: 100%; max-height: 150px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
     .alert { padding: 14px 18px; border-radius: 16px; margin-top: 20px; }
     .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
@@ -43,9 +44,24 @@
     .group-table th { background: #f1f5f9; font-weight: 600; color: #334155; font-size: 13px; }
     .group-table tr:hover { background: #f8fafc; }
     .badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
-    .badge-pending { background: #fef3c7; color: #d97706; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
+    .badge-info { background: #dbeafe; color: #2563eb; }
+    .badge-success { background: #d1fae5; color: #059669; }
+    .badge-danger { background: #fee2e2; color: #dc2626; }
+    .badge-secondary { background: #e2e8f0; color: #475569; }
     .grid-2 { display: flex; gap: 24px; flex-wrap: wrap; }
     .grid-2 > * { flex: 1; min-width: 300px; }
+    .camera-section { margin-top: 20px; padding: 20px; background: #f1f5f9; border-radius: 16px; }
+    .camera-preview { width: 100%; max-width: 400px; border-radius: 16px; margin-top: 10px; }
+    .stats-badge { display: inline-block; padding: 6px 12px; background: #e2e8f0; border-radius: 30px; font-size: 12px; margin-right: 8px; }
+    .selected-cargos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+    .search-input-cargos { max-width: 300px; }
+    .image-upload-section { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+    .upload-method { flex: 1; min-width: 250px; padding: 15px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .upload-method h4 { margin-bottom: 15px; color: #1e293b; }
+    .current-image { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; text-align: center; }
+    .current-image img { max-width: 100%; max-height: 150px; border-radius: 8px; }
+    @media (max-width: 768px) { .container { padding: 10px; } .card-body { padding: 16px; } }
 </style>
 {% endblock %}
 
@@ -61,25 +77,20 @@
                 <div>
                     <div class="form-group">
                         <label>👤 Foydalanuvchi</label>
-                        <select id="userSelect">
-                            <option value="">-- Tanlang --</option>
+                        <select id="userSelect" class="form-select" style="width: 100%;">
+                            <option value="">-- Qidirish yoki tanlash --</option>
                         </select>
                     </div>
                     <div class="form-group" id="flightGroup" style="display: none;">
                         <label>✈️ Reys</label>
-                        <select id="flightSelect">
-                            <option value="">-- Tanlang --</option>
+                        <select id="flightSelect" class="form-select" style="width: 100%;">
+                            <option value="">-- Qidirish yoki tanlash --</option>
                         </select>
-                    </div>
-                    <div class="form-group">
-                        <label>🖼 Guruh rasmi</label>
-                        <input type="file" id="groupImage" accept="image/*">
-                        <div id="imagePreview"></div>
                     </div>
                 </div>
                 <div id="cargosGroup" style="display: none;">
                     <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="🔍 Trek kodi bo‘yicha qidirish">
+                        <input type="text" id="searchInput" placeholder="🔍 Trek kodi bo‘yicha qidirish" class="search-input-cargos">
                     </div>
                     <div id="cargosList" class="cargo-list">
                         <div class="empty-state">Avval foydalanuvchi va reysni tanlang</div>
@@ -87,18 +98,61 @@
                 </div>
             </div>
 
-            <!-- Tanlangan yuklar jadvali -->
-            <div id="selectedSection" style="display: none; margin-top: 24px;">
-                <h3 style="margin-bottom: 12px;">✅ Tanlangan yuklar</h3>
-                <div style="overflow-x: auto;">
-                    <table class="selected-table">
-                        <thead><tr><th>Trek kod</th><th>Reys</th><th>Og'irlik (kg)</th><th>Narxi (so'm)</th><th></th></tr></thead>
-                        <tbody id="selectedTableBody"></tbody>
-                    </table>
+            <!-- Rasm yuklash bo'limi (ham kamera, ham fayl) -->
+            <div id="imageUploadSection" style="display: none;">
+                <div class="image-upload-section">
+                    <!-- Fayl yuklash usuli -->
+                    <div class="upload-method">
+                        <h4>📁 Fayldan yuklash</h4>
+                        <input type="file" id="fileInput" accept="image/*" style="margin-bottom: 10px;">
+                        <div id="filePreview"></div>
+                    </div>
+
+                    <!-- Kamera orqali olish usuli -->
+                    <div class="upload-method">
+                        <h4>📸 Kamera orqali olish</h4>
+                        <div>
+                            <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 100%; border-radius: 12px; background: #000; display: none;"></video>
+                            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button type="button" id="startCameraBtn" class="btn btn-secondary" style="padding: 8px 16px;">🎥 Kamerani yoqish</button>
+                                <button type="button" id="takePhotoBtn" class="btn btn-success" style="padding: 8px 16px;" disabled>📸 Rasm olish</button>
+                                <button type="button" id="stopCameraBtn" class="btn btn-danger" style="padding: 8px 16px; display: none;">⏹️ Stop</button>
+                            </div>
+                            <div id="cameraPreview"></div>
+                        </div>
+                    </div>
                 </div>
-                <div class="summary-box">
-                    <span>📦 Jami og‘irlik: <strong id="totalWeight">0</strong> kg</span>
-                    <span>💰 Jami summa: <strong id="totalPrice">0</strong> so‘m</span>
+
+                <!-- Joriy tanlangan rasm -->
+                <div id="currentImageDisplay" class="current-image" style="display: none;">
+                    <strong>✅ Tanlangan rasm:</strong>
+                    <div id="selectedImagePreview"></div>
+                    <button type="button" id="clearImageBtn" class="btn btn-secondary" style="padding: 5px 10px; margin-top: 5px;">🗑️ Rasmni o'chirish</button>
+                </div>
+            </div>
+
+            <!-- Tanlangan yuklar soni va umumiy ma'lumotlar -->
+            <div id="selectedSection" style="display: none; margin-top: 24px;">
+                <div class="selected-cargos-header">
+                    <h3 style="margin: 0;">✅ Tanlangan yuklar</h3>
+                    <div class="stats-badge" id="selectedCount">0 ta yuk tanlangan</div>
+                </div>
+
+                <div class="selected-info">
+                    <div style="margin-bottom: 16px;">
+                        <label>⚖️ Jami og‘irlik (kg)</label>
+                        <input type="number" id="totalWeightInput" class="form-control" step="0.1" value="0" placeholder="Jami og‘irlikni kiriting" style="margin-top: 5px;">
+                    </div>
+                    <div>
+                        <label>💰 Jami summa (so‘m)</label>
+                        <input type="number" id="totalPriceInput" class="form-control" step="1000" value="0" placeholder="Jami summani kiriting" style="margin-top: 5px;">
+                    </div>
+                </div>
+
+                <div class="summary-box" style="margin-top: 16px;">
+                    <span>📦 Tanlangan yuklar: <strong id="selectedCountSummary">0</strong> ta</span>
+                    <span>⚖ Jami og‘irlik: <strong id="totalWeightDisplay">0</strong> kg</span>
+                    <span>💰 Jami summa: <strong id="totalPriceDisplay">0</strong> so‘m</span>
                 </div>
             </div>
 
@@ -115,8 +169,24 @@
         <div class="card-body">
             <div style="overflow-x: auto;">
                 <table class="group-table">
-                    <thead><tr><th>ID</th><th>Res kodi (Reys)</th><th>Foydalanuvchi</th><th>Rasm</th><th>Jami og'irlik</th><th>Jami summa</th><th>To'lov holati</th><th>Yetkazish usuli</th><th>Manzil</th><th>Yaratilgan</th><th></th></tr></thead>
-                    <tbody id="groupsList"><tr><td colspan="11" class="empty-state">Yuklanmoqda...</td></tr></tbody>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Res kodi (Reys)</th>
+                            <th>Foydalanuvchi</th>
+                            <th>Rasm</th>
+                            <th>Jami og'irlik</th>
+                            <th>Jami summa</th>
+                            <th>To'lov holati</th>
+                            <th>Yetkazish usuli</th>
+                            <th>Manzil</th>
+                            <th>Yaratilgan</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="groupsList">
+                        <tr><td colspan="11" class="empty-state">Yuklanmoqda...</td></tr>
+                    </tbody>
                 </table>
             </div>
         </div>
@@ -124,66 +194,89 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
     let selectedUser = null;
-    let selectedCargos = new Map(); // id -> {track_code, flight_name, weight, price}
+    let selectedCargos = new Map(); // id -> {track_code, flight_name}
     let allCargos = [];
+    let currentStream = null;
+    let currentImageFile = null; // Tanlangan rasm fayli
 
-    function loadUsers() {
-        $.get('/admin/warehouse/arrivedgroup/api/users/', function(users) {
-            const select = $('#userSelect');
-            select.empty().append('<option value="">-- Foydalanuvchi tanlang --</option>');
-            users.forEach(user => select.append(`<option value="${user.id}">${user.name} (${user.user_id}) - ${user.phone}</option>`));
-        });
-    }
-
-    function loadGroups() {
-        $.get('/admin/warehouse/arrivedgroup/api/groups/', function(groups) {
-            const tbody = $('#groupsList');
-            if (!groups || groups.length === 0) { tbody.html('<tr><td colspan="11" class="empty-state">Hech qanday guruh mavjud emas</td></tr>'); return; }
-            tbody.empty();
-            groups.forEach(g => {
-                const statusClass = g.payment_status === 'To\'lov kutilmoqda' ? 'badge-pending' : '';
-                tbody.append(`
-                    <tr>
-                        <td>${g.id}</td>
-                        <td><strong>${g.receipt_code}</strong></td>
-                        <td>${g.user_name}<br><small>${g.user_id || ''}</small></td>
-                        <td>${g.image ? `<img src="${g.image}" style="width:40px;height:40px;object-fit:cover;border-radius:10px;">` : '—'}</td>
-                        <td>${parseFloat(g.total_weight).toFixed(2)} kg</td>
-                        <td>${parseInt(g.total_price).toLocaleString()} so'm</td>
-                        <td><span class="badge ${statusClass}">${g.payment_status}</span></td>
-                        <td>${g.delivery_method}</td>
-                        <td style="max-width:200px; white-space:nowrap; overflow-x:auto;">${g.delivery_address}</td>
-                        <td>${new Date(g.created_at).toLocaleString()}</td>
-                        <td><a href="/admin/warehouse/arrivedgroup/${g.id}/change/" target="_blank">✏️ Tahrirlash</a></td>
-                    </tr>
-                `);
-            });
-        }).fail(() => $('#groupsList').html('<tr><td colspan="11" class="empty-state">Xatolik yuz berdi</td></tr>'));
-    }
-
-    $('#userSelect').change(function() {
-        const userId = $(this).val();
-        if (!userId) { $('#flightGroup, #cargosGroup, #selectedSection').hide(); selectedUser = null; return; }
-        selectedUser = userId;
-        loadFlights(userId);
-        $('#flightGroup').show();
+    // Select2 sozlamalari
+    $('#userSelect').select2({
+        theme: 'bootstrap-5',
+        placeholder: '👤 Foydalanuvchini qidirish (ism, telefon, ID)...',
+        allowClear: true,
+        ajax: {
+            url: '/admin/warehouse/arrivedgroup/api/users/search/',
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data.results };
+            },
+            cache: true
+        },
+        minimumInputLength: 1,
+        templateResult: formatUser,
+        templateSelection: formatUserSelection
     });
 
-    function loadFlights(userId) {
-        $.get(`/admin/warehouse/arrivedgroup/api/flights/${userId}/`, function(flights) {
-            const select = $('#flightSelect');
-            select.empty().append('<option value="">-- Reys tanlang --</option>');
-            flights.forEach(flight => select.append(`<option value="${flight}">✈️ ${flight}</option>`));
-        });
+    function formatUser(user) {
+        if (user.loading) return user.text;
+        return $(`<div><strong>${user.name}</strong><br/><small>🆔 ${user.user_id || '—'} | 📞 ${user.phone || '—'}</small></div>`);
     }
 
-    $('#flightSelect').change(function() {
+    function formatUserSelection(user) {
+        return user.name || user.text;
+    }
+
+    // Reys Select2
+    $('#flightSelect').select2({
+        theme: 'bootstrap-5',
+        placeholder: '✈️ Reysni qidirish...',
+        allowClear: true,
+        ajax: {
+            url: function() {
+                return selectedUser ? `/admin/warehouse/arrivedgroup/api/flights/search/${selectedUser}/` : null;
+            },
+            dataType: 'json',
+            delay: 300,
+            data: function(params) {
+                return { q: params.term };
+            },
+            processResults: function(data) {
+                return { results: data.results || [] };
+            },
+            cache: true
+        },
+        minimumInputLength: 1
+    });
+
+    $('#userSelect').on('change', function() {
+        const userId = $(this).val();
+        if (!userId) {
+            $('#flightGroup, #cargosGroup, #imageUploadSection, #selectedSection').hide();
+            selectedUser = null;
+            $('#flightSelect').val(null).trigger('change');
+            return;
+        }
+        selectedUser = userId;
+        $('#flightGroup').show();
+        $('#flightSelect').val(null).trigger('change');
+        $('#flightSelect').select2('open');
+    });
+
+    $('#flightSelect').on('change', function() {
         const flightName = $(this).val();
-        if (!flightName || !selectedUser) { $('#cargosGroup, #selectedSection').hide(); return; }
+        if (!flightName || !selectedUser) {
+            $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
+            return;
+        }
         loadCargos(selectedUser, flightName);
-        $('#cargosGroup').show();
+        $('#cargosGroup, #imageUploadSection').show();
     });
 
     function loadCargos(userId, flightName) {
@@ -200,101 +293,225 @@
         const term = $('#searchInput').val().toLowerCase();
         const filtered = cargos.filter(c => c.track_code.toLowerCase().includes(term));
         if (filtered.length === 0) { container.html('<div class="empty-state">🔍 Trek kodi topilmadi</div>'); return; }
+
         filtered.forEach(cargo => {
             const checked = selectedCargos.has(cargo.id);
             container.append(`
                 <div class="cargo-item ${checked ? 'selected' : ''}" data-id="${cargo.id}">
                     <input type="checkbox" class="cargo-checkbox" data-id="${cargo.id}" ${checked ? 'checked' : ''}>
-                    <div class="cargo-info"><div class="track-code">📦 ${cargo.track_code}</div><div class="flight-name">✈️ ${cargo.flight_name}</div></div>
+                    <div class="cargo-info">
+                        <div class="track-code">📦 ${cargo.track_code}</div>
+                        <div class="flight-name">✈️ ${cargo.flight_name}</div>
+                    </div>
                     <span class="status-badge">🚚 Yo'lda</span>
                 </div>
             `);
         });
+
         $('.cargo-checkbox').off('change').on('change', function() {
             const id = parseInt($(this).data('id'));
             const cargo = allCargos.find(c => c.id === id);
             if ($(this).is(':checked')) {
-                selectedCargos.set(id, { track_code: cargo.track_code, flight_name: cargo.flight_name, weight: 0, price: 0 });
+                selectedCargos.set(id, { track_code: cargo.track_code, flight_name: cargo.flight_name });
                 $('#selectedSection').show();
             } else {
                 selectedCargos.delete(id);
                 if (selectedCargos.size === 0) $('#selectedSection').hide();
             }
+            updateSelectedDisplay();
             renderCargosList(allCargos);
-            renderSelectedTable();
-            updateTotals();
         });
+
         $('.cargo-item').off('click').on('click', function(e) {
-            if (e.target.type !== 'checkbox') $(this).find('.cargo-checkbox').prop('checked', !$(this).find('.cargo-checkbox').prop('checked')).trigger('change');
+            if (e.target.type !== 'checkbox') {
+                $(this).find('.cargo-checkbox').prop('checked', !$(this).find('.cargo-checkbox').prop('checked')).trigger('change');
+            }
         });
     }
 
-    function renderSelectedTable() {
-        const tbody = $('#selectedTableBody');
-        if (selectedCargos.size === 0) { tbody.html('<tr><td colspan="5" class="empty-state">Hech qanday yuk tanlanmagan</td></tr>'); return; }
-        tbody.empty();
-        selectedCargos.forEach((cargo, id) => {
-            tbody.append(`
-                <tr data-id="${id}">
-                    <td>📦 ${cargo.track_code}</td><td>✈️ ${cargo.flight_name}</td>
-                    <td><input type="number" class="weight-input" data-id="${id}" value="${cargo.weight || 0}" step="0.1" style="width:80px"></td>
-                    <td><input type="number" class="price-input" data-id="${id}" value="${cargo.price || 0}" step="1000" style="width:120px"></td>
-                    <td><button class="remove-cargo" data-id="${id}">✖</button></td>
-                </tr>
-            `);
-        });
-        $('.weight-input').off('change').on('change', function() { updateCargoField($(this).data('id'), 'weight', $(this).val()); });
-        $('.price-input').off('change').on('change', function() { updateCargoField($(this).data('id'), 'price', $(this).val()); });
-        $('.remove-cargo').off('click').on('click', function() {
-            selectedCargos.delete(parseInt($(this).data('id')));
-            if (selectedCargos.size === 0) $('#selectedSection').hide();
-            renderCargosList(allCargos);
-            renderSelectedTable();
-            updateTotals();
-        });
-    }
+    function updateSelectedDisplay() {
+        const count = selectedCargos.size;
+        $('#selectedCount').text(`${count} ta yuk tanlangan`);
+        $('#selectedCountSummary').text(count);
 
-    function updateCargoField(id, field, value) {
-        if (selectedCargos.has(id)) selectedCargos.get(id)[field] = parseFloat(value) || 0;
-        updateTotals();
+        if (count === 0) {
+            $('#selectedSection').hide();
+        } else {
+            $('#selectedSection').show();
+        }
     }
 
     function updateTotals() {
-        let w = 0, p = 0;
-        selectedCargos.forEach(c => { w += c.weight || 0; p += c.price || 0; });
-        $('#totalWeight').text(w.toFixed(2)); $('#totalPrice').text(p.toLocaleString());
+        const weight = parseFloat($('#totalWeightInput').val()) || 0;
+        const price = parseFloat($('#totalPriceInput').val()) || 0;
+        $('#totalWeightDisplay').text(weight.toFixed(2));
+        $('#totalPriceDisplay').text(price.toLocaleString());
     }
 
+    $('#totalWeightInput, #totalPriceInput').on('input', updateTotals);
     $('#searchInput').on('keyup', () => renderCargosList(allCargos));
-    $('#groupImage').change(function(e) {
+
+    // ============ RASM YUKLASH (HAM KAMERA, HAM FAYL) ============
+    let videoElement = document.getElementById('cameraVideo');
+    let isCameraStarted = false;
+
+    // Fayl yuklash
+    $('#fileInput').off('change').on('change', function(e) {
         const file = e.target.files[0];
-        if (file) { const reader = new FileReader(); reader.onload = ev => $('#imagePreview').html(`<img src="${ev.target.result}" class="image-preview">`); reader.readAsDataURL(file); }
-        else $('#imagePreview').empty();
+        if (file && file.type.startsWith('image/')) {
+            currentImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(ev) {
+                $('#filePreview').html(`<img src="${ev.target.result}" class="image-preview" style="max-width: 100%;">`);
+                updateSelectedImageDisplay(ev.target.result);
+            };
+            reader.readAsDataURL(file);
+        } else if (file) {
+            alert('Iltimos, faqat rasm faylini tanlang (jpg, png, gif, webp)');
+            $(this).val('');
+        }
     });
 
-    $('#createGroupBtn').click(function() {
-        const imageFile = $('#groupImage')[0].files[0];
-        const flightName = $('#flightSelect').val();
-        if (!flightName) return $('#result').html('<div class="alert alert-error">❌ Reysni tanlang</div>');
-        if (selectedCargos.size === 0) return $('#result').html('<div class="alert alert-error">❌ Hech qanday yuk tanlanmagan</div>');
+    // Tanlangan rasmni ko'rsatish
+    function updateSelectedImageDisplay(imageUrl) {
+        $('#selectedImagePreview').html(`<img src="${imageUrl}" style="max-width: 100%; max-height: 120px; border-radius: 8px;">`);
+        $('#currentImageDisplay').show();
+    }
 
-        const cargoIds = [], weights = [], prices = [];
-        selectedCargos.forEach((c, id) => {
-            cargoIds.push(id);
-            weights.push(c.weight || 0);
-            prices.push(c.price || 0);
-        });
+    // Rasmni tozalash
+    $('#clearImageBtn').off('click').on('click', function() {
+        currentImageFile = null;
+        $('#fileInput').val('');
+        $('#filePreview').empty();
+        $('#cameraPreview').empty();
+        $('#selectedImagePreview').empty();
+        $('#currentImageDisplay').hide();
+
+        // Kamerani ham tozalash
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+            videoElement.style.display = 'none';
+            $('#startCameraBtn').show();
+            $('#stopCameraBtn').hide();
+            $('#takePhotoBtn').prop('disabled', true);
+            isCameraStarted = false;
+        }
+    });
+
+    // Kamerani yoqish
+    $('#startCameraBtn').off('click').on('click', async function() {
+        try {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: 'environment' } // Orqa kamerani ishlatish
+            });
+            currentStream = stream;
+            videoElement.srcObject = stream;
+            videoElement.style.display = 'block';
+            $('#startCameraBtn').hide();
+            $('#stopCameraBtn').show();
+            $('#takePhotoBtn').prop('disabled', false);
+            isCameraStarted = true;
+        } catch (err) {
+            console.error('Kamera xatosi:', err);
+            alert('Kamera ochilmadi. Iltimos, ruxsatni tekshiring.');
+        }
+    });
+
+    // Rasm olish (faqat bir marta)
+    $('#takePhotoBtn').off('click').on('click', function() {
+        if (!isCameraStarted || !currentStream) {
+            alert('Iltimos, avval kamerani yoqing');
+            return;
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+        // Rasmni blobga aylantirish
+        canvas.toBlob(function(blob) {
+            if (currentImageFile) {
+                // Agar oldingi rasm bo'lsa, uni o'chirish
+                URL.revokeObjectURL(URL.createObjectURL(currentImageFile));
+            }
+            currentImageFile = new File([blob], `cargo_photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const imageUrl = URL.createObjectURL(blob);
+
+            // Kameradan olingan rasmni ko'rsatish
+            $('#cameraPreview').html(`<img src="${imageUrl}" class="image-preview" style="max-width: 100%; margin-top: 10px;">`);
+            updateSelectedImageDisplay(imageUrl);
+
+            // Kamerani avtomatik to'xtatish (ixtiyoriy)
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+                videoElement.style.display = 'none';
+                $('#startCameraBtn').show();
+                $('#stopCameraBtn').hide();
+                $('#takePhotoBtn').prop('disabled', true);
+                isCameraStarted = false;
+            }
+        }, 'image/jpeg', 0.9);
+    });
+
+    // Kamerani to'xtatish
+    $('#stopCameraBtn').off('click').on('click', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+            videoElement.srcObject = null;
+            videoElement.style.display = 'none';
+            $('#startCameraBtn').show();
+            $('#stopCameraBtn').hide();
+            $('#takePhotoBtn').prop('disabled', true);
+            isCameraStarted = false;
+        }
+    });
+
+    // ============ GURUH YARATISH ============
+    $('#createGroupBtn').off('click').on('click', function() {
+        const flightName = $('#flightSelect').val();
+        if (!flightName) {
+            $('#result').html('<div class="alert alert-error">❌ Reysni tanlang</div>');
+            scrollToResult();
+            return;
+        }
+        if (selectedCargos.size === 0) {
+            $('#result').html('<div class="alert alert-error">❌ Hech qanday yuk tanlanmagan</div>');
+            scrollToResult();
+            return;
+        }
+
+        const totalWeight = parseFloat($('#totalWeightInput').val()) || 0;
+        const totalPrice = parseFloat($('#totalPriceInput').val()) || 0;
+
+        if (totalWeight <= 0 && totalPrice <= 0) {
+            if (!confirm("Og'irlik va summa kiritilmagan. Davom etilsinmi?")) return;
+        }
+
+        const cargoIds = Array.from(selectedCargos.keys());
 
         const formData = new FormData();
         formData.append('user_id', selectedUser);
         formData.append('flight_name', flightName);
         formData.append('cargo_ids', JSON.stringify(cargoIds));
-        formData.append('cargo_weights', JSON.stringify(weights));
-        formData.append('cargo_prices', JSON.stringify(prices));
-        if (imageFile) formData.append('image', imageFile);
+        formData.append('total_weight', totalWeight);
+        formData.append('total_price', totalPrice);
+
+        // Rasm faylini qo'shish (agar mavjud bo'lsa)
+        if (currentImageFile) {
+            formData.append('image', currentImageFile);
+        }
 
         const btn = $(this);
         btn.prop('disabled', true).text('⏳ Yaratilmoqda...');
+
         $.ajax({
             url: '/admin/warehouse/arrivedgroup/api/create-group/',
             type: 'POST',
@@ -304,24 +521,113 @@
             success: function(res) {
                 if (res.status === 'success') {
                     $('#result').html(`<div class="alert alert-success">✅ ${res.message}</div>`);
-                    $('#groupImage').val('');
-                    $('#imagePreview').empty();
-                    $('#flightSelect').val('');
-                    selectedCargos.clear();
-                    $('#userSelect').val('');
-                    $('#cargosGroup, #selectedSection').hide();
-                    renderSelectedTable();
-                    updateTotals();
-                    loadUsers();
+                    // Formani tozalash
+                    resetForm();
                     loadGroups();
-                } else $('#result').html(`<div class="alert alert-error">❌ ${res.error}</div>`);
+                    scrollToResult();
+
+                    setTimeout(() => {
+                        $('#result').fadeOut(3000, function() {
+                            $(this).empty().show();
+                        });
+                    }, 3000);
+                } else {
+                    $('#result').html(`<div class="alert alert-error">❌ ${res.error}</div>`);
+                    scrollToResult();
+                }
             },
-            error: (err) => $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${err.responseJSON?.error || 'Noma\'lum'}</div>`),
+            error: function(err) {
+                let errorMsg = 'Noma\'lum xatolik';
+                if (err.responseJSON && err.responseJSON.error) {
+                    errorMsg = err.responseJSON.error;
+                } else if (err.responseText) {
+                    try {
+                        const data = JSON.parse(err.responseText);
+                        errorMsg = data.error || errorMsg;
+                    } catch(e) {}
+                }
+                $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${errorMsg}</div>`);
+                scrollToResult();
+            },
             complete: () => btn.prop('disabled', false).text('✓ Guruh yaratish')
         });
     });
 
-    loadUsers();
+    function resetForm() {
+        // Formani tozalash
+        $('#fileInput').val('');
+        $('#filePreview').empty();
+        $('#cameraPreview').empty();
+        $('#selectedImagePreview').empty();
+        $('#currentImageDisplay').hide();
+        currentImageFile = null;
+
+        // Kamerani to'xtatish
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+            currentStream = null;
+            videoElement.srcObject = null;
+            videoElement.style.display = 'none';
+            $('#startCameraBtn').show();
+            $('#stopCameraBtn').hide();
+            $('#takePhotoBtn').prop('disabled', true);
+            isCameraStarted = false;
+        }
+
+        // Tanlangan yuklarni tozalash
+        selectedCargos.clear();
+        $('#flightSelect').val(null).trigger('change');
+        $('#userSelect').val(null).trigger('change');
+        $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
+        $('#totalWeightInput').val(0);
+        $('#totalPriceInput').val(0);
+        updateSelectedDisplay();
+        updateTotals();
+    }
+
+    function scrollToResult() {
+        $('html, body').animate({
+            scrollTop: $('#result').offset().top - 100
+        }, 500);
+    }
+
+    function loadGroups() {
+        $.get('/admin/warehouse/arrivedgroup/api/groups/', function(groups) {
+            const tbody = $('#groupsList');
+            if (!groups || groups.length === 0) {
+                tbody.html('<tr><td colspan="11" class="empty-state">Hech qanday guruh mavjud emas</td></tr>');
+                return;
+            }
+            tbody.empty();
+            groups.forEach(g => {
+                tbody.append(`
+                    <tr>
+                        <td>${g.id}</td>
+                        <td><strong>${g.receipt_code}</strong></td>
+                        <td>${g.user_name}<br><small>${g.user_id || ''}</small></td>
+                        <td>${g.image ? `<img src="${g.image}" style="width:40px;height:40px;object-fit:cover;border-radius:10px;">` : '—'}</td>
+                        <td>${parseFloat(g.total_weight).toFixed(2)} kg</td>
+                        <td>${parseInt(g.total_price).toLocaleString()} so'm</td>
+                        <td><span class="badge ${g.payment_status_class}">${g.payment_status}</span></td>
+                        <td>${g.delivery_method}</td>
+                        <td style="max-width:200px; white-space:nowrap; overflow-x:auto;">${g.delivery_address}</td>
+                        <td>${g.created_at_display || new Date(g.created_at).toLocaleString()}</td>
+                        <td><a href="/admin/warehouse/arrivedgroup/${g.id}/change/" target="_blank">✏️ Tahrirlash</a></td>
+                    </tr>
+                `);
+            });
+        }).fail(() => $('#groupsList').html('<tr><td colspan="11" class="empty-state">Xatolik yuz berdi</td></tr>'));
+    }
+
+    // Dastlabki yuklash
     loadGroups();
+    updateSelectedDisplay();
+
+    // Sahifadan chiqishda kamerani to'xtatish
+    $(window).on('beforeunload', function() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+    });
 </script>
 {% endblock %}
