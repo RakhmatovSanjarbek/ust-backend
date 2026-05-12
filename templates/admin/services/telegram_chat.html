@@ -1,4 +1,3 @@
-<!-- templates/admin/services/telegram_chat.html -->
 {% extends "admin/base_site.html" %}
 {% load static %}
 
@@ -209,11 +208,6 @@
         font-weight: 500;
     }
 
-    .input-area button:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-    }
-
     .file-label {
         background: #e0e0e0;
         padding: 10px 15px;
@@ -228,20 +222,9 @@
         color: #9aa0a6;
     }
 
-    /* Loading spinner */
-    .loading-spinner {
-        display: inline-block;
-        width: 20px;
-        height: 20px;
-        border: 2px solid #fff;
-        border-radius: 50%;
-        border-top-color: transparent;
-        animation: spin 0.6s linear infinite;
-        margin-right: 8px;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
+    button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>
 {% endblock %}
@@ -272,7 +255,7 @@
                 📎
                 <input type="file" id="imageInput" accept="image/*" style="display: none;">
             </label>
-            <input type="text" id="messageInput" placeholder="Xabar yozing..." autocomplete="off">
+            <input type="text" id="messageInput" placeholder="Xabar yozing...">
             <button id="sendBtn">➤ Yuborish</button>
         </div>
     </div>
@@ -284,40 +267,10 @@
     let shouldAutoScroll = true;
     let lastMessageCount = 0;
     let refreshInterval = null;
-    let isLoading = false;
 
-    // ============ CSRF TOKEN FUNKSIYASI ============
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    const csrftoken = getCookie('csrftoken');
-
-    // ============ GLOBAL AJAX SETUP ============
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!this.crossDomain && settings.type !== 'GET') {
-                xhr.setRequestHeader('X-CSRFToken', csrftoken);
-            }
-        }
-    });
-
-    // ============ SCROLL FUNKSIYALARI ============
     function setupScrollListener() {
         const messagesArea = document.getElementById('messagesArea');
         if (!messagesArea) return;
-
         messagesArea.removeEventListener('scroll', onScroll);
         messagesArea.addEventListener('scroll', onScroll);
     }
@@ -325,20 +278,13 @@
     function onScroll() {
         const messagesArea = document.getElementById('messagesArea');
         if (!messagesArea) return;
-
         const isNearBottom = messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight < 100;
-
-        if (isNearBottom) {
-            shouldAutoScroll = true;
-        } else {
-            shouldAutoScroll = false;
-        }
+        shouldAutoScroll = isNearBottom;
     }
 
     function scrollToBottom() {
         const messagesArea = document.getElementById('messagesArea');
         if (!messagesArea) return;
-
         if (shouldAutoScroll) {
             messagesArea.scrollTop = messagesArea.scrollHeight;
         }
@@ -351,134 +297,85 @@
         }
     }
 
-    // ============ ESCAPE HTML ============
-    function escapeHtml(text) {
-        if (!text) return '';
-        return text.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
+    function loadUsers() {
+        $.get('/admin/services/supportmessage/api/users/', function(users) {
+            const container = $('#usersList');
+            container.empty();
+
+            users.forEach(user => {
+                const unread = user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : '';
+                const html = `
+                    <div class="user-item" data-id="${user.id}" data-name="${user.name}" data-phone="${user.phone}">
+                        <img class="user-avatar" src="${user.avatar}">
+                        <div class="user-info">
+                            <div class="user-name">
+                                ${user.name}
+                                ${unread}
+                            </div>
+                            <div class="user-last-msg">${user.last_message}</div>
+                        </div>
+                        <div class="user-time">${user.last_time}</div>
+                    </div>
+                `;
+                container.append(html);
+            });
+
+            $('.user-item').click(function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const phone = $(this).data('phone');
+
+                $('.user-item').removeClass('active');
+                $(this).addClass('active');
+
+                currentUserId = id;
+                $('#selectedUserName').text(name);
+                $('#selectedUserPhone').text(phone);
+                $('#chatHeader, #inputArea').show();
+
+                shouldAutoScroll = true;
+                loadMessages(id);
+                $(this).find('.unread-badge').remove();
+            });
         });
     }
 
-    // ============ LOAD USERS ============
-    function loadUsers() {
-        $.get('/admin/services/supportmessage/api/users/')
-            .done(function(users) {
-                const container = $('#usersList');
-                container.empty();
-
-                if (users.length === 0) {
-                    container.html('<div class="empty-state">📭 Hech qanday foydalanuvchi yo\'q</div>');
-                    return;
-                }
-
-                users.forEach(user => {
-                    const unread = user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : '';
-                    const lastMsg = escapeHtml(user.last_message) || 'Xabar yo\'q';
-
-                    const html = `
-                        <div class="user-item" data-id="${user.id}" data-name="${escapeHtml(user.name)}" data-phone="${escapeHtml(user.phone)}">
-                            <img class="user-avatar" src="${user.avatar}">
-                            <div class="user-info">
-                                <div class="user-name">
-                                    ${escapeHtml(user.name)}
-                                    ${unread}
-                                </div>
-                                <div class="user-last-msg">${lastMsg}</div>
-                            </div>
-                            <div class="user-time">${user.last_time || ''}</div>
-                        </div>
-                    `;
-                    container.append(html);
-                });
-
-                // Avvalgi tanlangan userni qayta aktiv qilish
-                if (currentUserId) {
-                    $(`.user-item[data-id="${currentUserId}"]`).addClass('active');
-                }
-
-                $('.user-item').off('click').on('click', function() {
-                    const id = $(this).data('id');
-                    const name = $(this).data('name');
-                    const phone = $(this).data('phone');
-
-                    $('.user-item').removeClass('active');
-                    $(this).addClass('active');
-
-                    currentUserId = id;
-                    $('#selectedUserName').text(name);
-                    $('#selectedUserPhone').text(phone);
-                    $('#chatHeader, #inputArea').show();
-
-                    shouldAutoScroll = true;
-                    lastMessageCount = 0;
-                    loadMessages(id);
-                    $(this).find('.unread-badge').remove();
-                });
-            })
-            .fail(function(error) {
-                console.error('Error loading users:', error);
-                $('#usersList').html('<div class="empty-state">❌ Xatolik yuz berdi</div>');
-            });
-    }
-
-    // ============ LOAD MESSAGES ============
     function loadMessages(userId) {
-        $.get(`/admin/services/supportmessage/api/messages/${userId}/`)
-            .done(function(messages) {
-                const container = $('#messagesArea');
-                const currentCount = messages.length;
-                const hasNewMessage = currentCount > lastMessageCount;
-                lastMessageCount = currentCount;
+        $.get(`/admin/services/supportmessage/api/messages/${userId}/`, function(messages) {
+            const container = $('#messagesArea');
+            const currentCount = messages.length;
+            const hasNewMessage = currentCount > lastMessageCount;
+            lastMessageCount = currentCount;
 
-                container.empty();
+            container.empty();
 
-                if (messages.length === 0) {
-                    container.html('<div class="empty-state">💬 Hech qanday xabar yo\'q</div>');
-                    return;
+            let lastDate = '';
+            messages.forEach(msg => {
+                if (msg.date !== lastDate) {
+                    container.append(`<div class="date-separator"><span>${msg.date}</span></div>`);
+                    lastDate = msg.date;
                 }
 
-                let lastDate = '';
-                messages.forEach(msg => {
-                    if (msg.date !== lastDate) {
-                        container.append(`<div class="date-separator"><span>${escapeHtml(msg.date)}</span></div>`);
-                        lastDate = msg.date;
-                    }
-
-                    let imageHtml = '';
-                    if (msg.image) {
-                        imageHtml = `<img src="${msg.image}" class="message-image" onclick="window.open('${msg.image}')" alt="Rasm">`;
-                    }
-
-                    const html = `
-                        <div class="message ${msg.is_admin ? 'admin' : 'user'}">
-                            <div class="message-bubble">
-                                ${msg.text ? `<div>${escapeHtml(msg.text)}</div>` : ''}
-                                ${imageHtml}
-                                <div class="message-time">${escapeHtml(msg.time)}</div>
-                            </div>
+                const html = `
+                    <div class="message ${msg.is_admin ? 'admin' : 'user'}">
+                        <div class="message-bubble">
+                            ${msg.text ? `<div>${escapeHtml(msg.text)}</div>` : ''}
+                            ${msg.image ? `<img src="${msg.image}" class="message-image" onclick="window.open('${msg.image}')">` : ''}
+                            <div class="message-time">${msg.time}</div>
                         </div>
-                    `;
-                    container.append(html);
-                });
-
-                if (shouldAutoScroll && hasNewMessage) {
-                    scrollToBottom();
-                }
-            })
-            .fail(function(error) {
-                console.error('Error loading messages:', error);
-                $('#messagesArea').html('<div class="empty-state">❌ Xabarlarni yuklashda xatolik</div>');
+                    </div>
+                `;
+                container.append(html);
             });
+
+            if (shouldAutoScroll && hasNewMessage) {
+                scrollToBottom();
+            }
+        });
     }
 
-    // ============ SEND MESSAGE ============
     function sendMessage() {
-        if (isLoading) return;
-
-        const message = $('#messageInput').val().trim();
+        const message = $('#messageInput').val();
         const imageFile = $('#imageInput')[0].files[0];
 
         if (!message && !imageFile) {
@@ -491,15 +388,12 @@
             return;
         }
 
-        isLoading = true;
         const formData = new FormData();
         formData.append('user_id', currentUserId);
-        if (message) formData.append('message', message);
+        formData.append('message', message);
         if (imageFile) formData.append('image', imageFile);
 
-        const $sendBtn = $('#sendBtn');
-        const originalText = $sendBtn.html();
-        $sendBtn.prop('disabled', true).html('<span class="loading-spinner"></span> Yuborilmoqda...');
+        $('#sendBtn').prop('disabled', true).text('Yuborilmoqda...');
 
         $.ajax({
             url: '/admin/services/supportmessage/api/send/',
@@ -512,38 +406,34 @@
                     $('#messageInput').val('');
                     $('#imageInput').val('');
                     shouldAutoScroll = true;
-
                     lastMessageCount = 0;
                     loadMessages(currentUserId);
                     loadUsers();
-
-                    setTimeout(function() {
-                        scrollToBottomForce();
-                    }, 200);
+                    setTimeout(() => scrollToBottomForce(), 100);
                 } else {
                     alert('Xatolik: ' + (response.message || 'Noma\'lum xato'));
                 }
             },
             error: function(xhr) {
-                console.error('Send error:', xhr);
-                if (xhr.status === 403) {
-                    alert('CSRF token xatosi! Sahifani yangilang (F5) va qayta urining.');
-                } else if (xhr.status === 400) {
-                    alert('So\'rov xatosi! Iltimos, qayta urining.');
-                } else if (xhr.status === 500) {
-                    alert('Server xatosi! Administratorga murojaat qiling.');
-                } else {
-                    alert('Xabar yuborishda xatolik! Status: ' + xhr.status);
-                }
+                console.error('Error:', xhr);
+                alert('Xabar yuborishda xatolik! Status: ' + xhr.status);
             },
             complete: function() {
-                isLoading = false;
-                $sendBtn.prop('disabled', false).html(originalText);
+                $('#sendBtn').prop('disabled', false).text('➤ Yuborish');
             }
         });
     }
 
-    // ============ AUTO REFRESH ============
+    function escapeHtml(text) {
+        if (!text) return '';
+        return text.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
     function startAutoRefresh() {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = setInterval(function() {
@@ -561,27 +451,19 @@
         }
     }
 
-    // ============ EVENT LISTENERS ============
+    // Event listeners
+    $('#sendBtn').click(sendMessage);
+    $('#messageInput').keypress(function(e) {
+        if (e.which === 13) sendMessage();
+    });
+    $('#imageInput').change(function() {
+        if (this.files.length) sendMessage();
+    });
+
     $(document).ready(function() {
         loadUsers();
         startAutoRefresh();
         setupScrollListener();
-
-        $('#sendBtn').off('click').on('click', sendMessage);
-
-        $('#messageInput').off('keypress').on('keypress', function(e) {
-            if (e.which === 13 && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-
-        $('#imageInput').off('change').on('change', function() {
-            if (this.files.length) {
-                sendMessage();
-            }
-        });
-
         $(window).on('beforeunload', function() {
             stopAutoRefresh();
         });
