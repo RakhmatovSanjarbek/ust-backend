@@ -386,31 +386,60 @@
     }
 
     function sendMessage() {
-        const message = $('#messageInput').val();
-        const imageFile = $('#imageInput')[0].files[0];
+    const message = $('#messageInput').val();
+    const imageFile = $('#imageInput')[0].files[0];
 
-        if (!message && !imageFile) return;
+    if (!message && !imageFile) {
+        alert('Iltimos, matn yoki rasm kiriting!');
+        return;
+    }
 
-        const formData = new FormData();
-        formData.append('user_id', currentUserId);
-        formData.append('message', message);
-        if (imageFile) formData.append('image', imageFile);
+    if (!currentUserId) {
+        alert('Iltimos, foydalanuvchini tanlang!');
+        return;
+    }
 
-        $.ajax({
-            url: '/admin/services/supportmessage/api/send/',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function() {
+    const formData = new FormData();
+    formData.append('user_id', currentUserId);
+    formData.append('message', message);
+    if (imageFile) formData.append('image', imageFile);
+
+    // Loading holati
+    $('#sendBtn').prop('disabled', true).text('Yuborilmoqda...');
+
+    $.ajax({
+        url: '/admin/services/supportmessage/api/send/',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(response) {
+            if (response.status === 'ok') {
                 $('#messageInput').val('');
                 $('#imageInput').val('');
-                shouldAutoScroll = true;  // Xabar yuborganda scroll yoqiladi
+                shouldAutoScroll = true;
+
+                // Xabarni darhol yuklash
                 loadMessages(currentUserId);
                 loadUsers();
+
+                // Pastga scroll
+                setTimeout(() => {
+                    scrollToBottomForce();
+                }, 100);
+            } else {
+                alert('Xatolik yuz berdi: ' + (response.message || 'Noma\'lum xato'));
             }
-        });
-    }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error:', error);
+            alert('Xabar yuborishda xatolik!');
+        },
+        complete: function() {
+            $('#sendBtn').prop('disabled', false).text('➤ Yuborish');
+        }
+    });
+}
 
     function escapeHtml(text) {
         return text.replace(/[&<>]/g, function(m) {

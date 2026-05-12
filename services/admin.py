@@ -48,30 +48,38 @@ class SupportMessageAdmin(admin.ModelAdmin):
         return JsonResponse(data, safe=False)
 
     def api_messages(self, request, user_id):
-        messages = SupportMessage.objects.filter(user_id=user_id).order_by('created_at')
-        data = []
-        for msg in messages:
-            data.append({
-                'id': msg.id,
-                'text': msg.message or '',
-                'image': msg.image.url if msg.image else None,
-                'is_admin': msg.is_from_admin,
-                'time': msg.created_at.strftime('%H:%M'),
-                'date': msg.created_at.strftime('%d.%m.%Y'),
-            })
-        # Admin ko'rgan xabarlarni o'qilgan deb belgilash
-        SupportMessage.objects.filter(user_id=user_id, is_from_admin=False, is_read=False).update(is_read=True)
-        return JsonResponse(data, safe=False)
+        try:
+            messages = SupportMessage.objects.filter(user_id=user_id).order_by('created_at')
+            data = []
+            for msg in messages:
+                data.append({
+                    'id': msg.id,
+                    'text': msg.message or '',
+                    'image': msg.image.url if msg.image else None,
+                    'is_admin': msg.is_from_admin,
+                    'time': msg.created_at.strftime('%H:%M'),
+                    'date': msg.created_at.strftime('%d.%m.%Y'),
+                })
+            # Admin ko'rgan xabarlarni o'qilgan deb belgilash
+            SupportMessage.objects.filter(user_id=user_id, is_from_admin=False, is_read=False).update(is_read=True)
+            return JsonResponse(data, safe=False)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
 
     def api_send(self, request):
         if request.method == 'POST':
             user_id = request.POST.get('user_id')
             message = request.POST.get('message')
             image = request.FILES.get('image')
+
+            if not user_id:
+                return JsonResponse({'status': 'error', 'message': 'user_id required'}, status=400)
+
             user = get_object_or_404(User, id=user_id)
+
             SupportMessage.objects.create(
                 user=user,
-                message=message,
+                message=message or '',
                 image=image,
                 is_from_admin=True
             )
