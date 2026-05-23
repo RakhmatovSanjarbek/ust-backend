@@ -12,3 +12,6 @@ db.sqlite3
 .idea/
 .vscode/
 echo "utils/firebase_credentials.json" >> .gitignore
+staticfiles/
+media/
+venv/
