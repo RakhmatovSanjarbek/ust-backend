@@ -11,3 +11,4 @@ db.sqlite3
 /static/
 .idea/
 .vscode/
+echo "utils/firebase_credentials.json" >> .gitignore
