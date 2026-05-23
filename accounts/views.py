@@ -37,6 +37,16 @@ def normalize_phone(phone):
     return phone
 
 
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_fcm_token(request):
+    token = request.data.get('fcm_token')
+    if token:
+        request.user.fcm_token = token
+        request.user.save(update_fields=['fcm_token'])
+        return Response({'message': 'Token yangilandi'})
+    return Response({'error': 'Token kiritilmagan'}, status=400)
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def signin_request(request):
@@ -104,6 +114,7 @@ def verify_otp(request):
     phone_input = request.data.get("phone")
     phone = normalize_phone(phone_input)
     otp_code = request.data.get("otp_code")
+    fcm_token = request.data.get("fcm_token")  # <-- Flutterdan kelayotgan tokenni ushlaymiz
 
     if not phone or not otp_code:
         return Response({"message": "Telefon yoki kod kiritilmadi"}, status=400)
@@ -125,7 +136,13 @@ def verify_otp(request):
 
     # Foydalanuvchini tasdiqlangan (verified) deb belgilaymiz
     user.is_verified = True
-    user.last_active = timezone.now()  # Aktivlik vaqtini yangilash
+    user.last_active = timezone.now()
+
+    # --- FCM TOKEN YANGILASH QISMI ---
+    if fcm_token:
+        user.fcm_token = fcm_token
+    # ---------------------------------
+
     user.save()
 
     # Ishlatilgan kodni o'chiramiz
@@ -137,7 +154,7 @@ def verify_otp(request):
     return Response(
         {
             "message": "Muvaffaqiyatli kirdingiz",
-            "token": str(refresh.access_token),  # Faqat bitta asosiy token
+            "token": str(refresh.access_token),
         },
         status=200,
     )

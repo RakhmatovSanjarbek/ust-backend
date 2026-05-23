@@ -1,0 +1,23 @@
+{% extends "admin/base.html" %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+@media (prefers-color-scheme: dark) {
+    table.import-preview td ins,
+    table.import-preview td del,
+    table.import-preview td {
+        background-color: #ffffff !important;
+        color: #212529 !important;
+    }
+    table.import-preview ins {
+        background-color: #c3e6cb !important;
+        color: #155724 !important;
+    }
+    table.import-preview del {
+        background-color: #f5c6cb !important;
+        color: #721c24 !important;
+    }
+}
+</style>
+{% endblock %}

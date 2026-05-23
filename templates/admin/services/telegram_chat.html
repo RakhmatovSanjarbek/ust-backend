@@ -244,6 +244,7 @@
         <div class="chat-header" id="chatHeader" style="display: none;">
             <h3 id="selectedUserName">Tanlang</h3>
             <p id="selectedUserPhone"></p>
+            <p id="selectedCustomUserId" style="font-size: 13px; color: #1e88e5; font-weight: 600; margin-top: 4px;"></p>
         </div>
 
         <div class="messages-area" id="messagesArea">
@@ -303,40 +304,52 @@
             container.empty();
 
             users.forEach(user => {
-                const unread = user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : '';
-                const html = `
-                    <div class="user-item" data-id="${user.id}" data-name="${user.name}" data-phone="${user.phone}">
-                        <img class="user-avatar" src="${user.avatar}">
-                        <div class="user-info">
-                            <div class="user-name">
-                                ${user.name}
-                                ${unread}
-                            </div>
-                            <div class="user-last-msg">${user.last_message}</div>
-                        </div>
-                        <div class="user-time">${user.last_time}</div>
-                    </div>
-                `;
-                container.append(html);
-            });
+    const unread = user.unread_count > 0 ? `<span class="unread-badge">${user.unread_count}</span>` : '';
+    const customIdBadge = user.user_id ? `<span style="font-size: 11px; background: #f0f4f8; color: #5f6368; padding: 2px 6px; border-radius: 4px; font-weight: normal; margin-left: 8px;">ID: ${user.user_id}</span>` : '';
+
+    // E'tibor bering: data-userid atributini qo'shdik
+    const html = `
+        <div class="user-item" data-id="${user.id}" data-userid="${user.user_id || ''}" data-name="${user.name}" data-phone="${user.phone}">
+            <img class="user-avatar" src="${user.avatar}">
+            <div class="user-info">
+                <div class="user-name">
+                    <span>${user.name} ${customIdBadge}</span>
+                    ${unread}
+                </div>
+                <div class="user-last-msg">${user.last_message}</div>
+            </div>
+            <div class="user-time">${user.last_time}</div>
+        </div>
+    `;
+    container.append(html);
+});
 
             $('.user-item').click(function() {
-                const id = $(this).data('id');
-                const name = $(this).data('name');
-                const phone = $(this).data('phone');
+    const id = $(this).data('id');
+    const customUserId = $(this).data('userid'); // Maxsus user_id ni olamiz
+    const name = $(this).data('name');
+    const phone = $(this).data('phone');
 
-                $('.user-item').removeClass('active');
-                $(this).addClass('active');
+    $('.user-item').removeClass('active');
+    $(this).addClass('active');
 
-                currentUserId = id;
-                $('#selectedUserName').text(name);
-                $('#selectedUserPhone').text(phone);
-                $('#chatHeader, #inputArea').show();
+    currentUserId = id; // Xabarlar yuklanishi uchun DB dagi id o'zgarishsiz qoladi
+    $('#selectedUserName').text(name);
+    $('#selectedUserPhone').text(phone);
 
-                shouldAutoScroll = true;
-                loadMessages(id);
-                $(this).find('.unread-badge').remove();
-            });
+    // Agar foydalanuvchida maxsus user_id bo'lsa ko'rsatadi, bo'lmasa bo'sh qoldiradi
+    if (customUserId) {
+        $('#selectedCustomUserId').text('Foydalanuvchi ID: ' + customUserId).show();
+    } else {
+        $('#selectedCustomUserId').hide();
+    }
+
+    $('#chatHeader, #inputArea').show();
+
+    shouldAutoScroll = true;
+    loadMessages(id);
+    $(this).find('.unread-badge').remove();
+});
         });
     }
 

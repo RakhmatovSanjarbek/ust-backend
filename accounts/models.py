@@ -56,6 +56,7 @@ class User(AbstractUser):
     rejection_note = models.TextField(null=True, blank=True, help_text="Qo'shimcha izoh")
     last_active = models.DateTimeField(auto_now=True)
     is_verified = models.BooleanField(default=False)
+    fcm_token = models.CharField(max_length=255, null=True, blank=True, help_text="Firebase Cloud Messaging Token")
 
     objects = UserManager()
 

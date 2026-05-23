@@ -1,0 +1,48 @@
+/* Barcha import preview elementlari */
+#result-table,
+#result-table *,
+.import-preview,
+.import-preview * {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: #dee2e6 !important;
+}
+
+/* New qatorlar — yashil */
+#result-table tr.new td {
+    background-color: #d1fae5 !important;
+    color: #065f46 !important;
+}
+
+/* Update qatorlar — sariq */
+#result-table tr.update td {
+    background-color: #fef3c7 !important;
+    color: #92400e !important;
+}
+
+/* Skip qatorlar — kulrang */
+#result-table tr.skip td {
+    background-color: #f3f4f6 !important;
+    color: #6b7280 !important;
+}
+
+/* Error qatorlar — qizil */
+#result-table tr.error td {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+}
+
+/* Header */
+#result-table th {
+    background-color: #f8f9fa !important;
+    color: #374151 !important;
+    font-weight: 600 !important;
+}
+
+/* Input va select elementlar */
+.import-preview input,
+.import-preview select {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 1px solid #ced4da !important;
+}

@@ -11,6 +11,9 @@ urlpatterns = [
     path('api/cargo/', include('cargo.urls')),
     path('api/warehouse/', include('warehouse.urls')),
     path('api/services/', include('services.urls')),
+    path('api/notifications/', include('notifications.urls')),
+    path('api/unassigned/', include('unassigned.urls')),
+    path('api/flights/', include('flights.urls')),
 ]
 
 if settings.DEBUG:

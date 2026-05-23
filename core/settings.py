@@ -14,10 +14,15 @@ SECRET_KEY = 'django-insecure-_mqoid!+$309xe_a+2v$+z6%m@_a_6$(ts()0o^yzt#n&^j*-b
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['46.8.176.172', 'utsgroup.uz', 'www.utsgroup.uz', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['46.8.176.172', 'utsgroup.uz', 'www.utsgroup.uz', '127.0.0.1', 'localhost', '10.0.2.2',
+                 '0.0.0.0']
+
+FIREBASE_CREDENTIALS_PATH = BASE_DIR / 'utils' / 'firebase_credentials.json'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://46.8.176.172',
+    'http://10.0.2.2:8000',
+    'http://127.0.0.1:8000'
     'http://utsgroup.uz',
     'https://utsgroup.uz',
 ]
@@ -39,6 +44,9 @@ INSTALLED_APPS = [
     'cargo',
     'warehouse',
     'services',
+    'notifications',
+    'unassigned',
+    'flights',
     'whitenoise.runserver_nostatic',
 ]
 
@@ -116,7 +124,6 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-
 LANGUAGES = [
     ('uz', _('Uzbek')),
     ('ru', _('Russian')),
@@ -152,12 +159,16 @@ JAZZMIN_SETTINGS = {
     "show_sidebar": True,
     "navigation_expanded": True,
     "language_chooser": True,
+    "custom_css": "css/import_fix.css",
     "order_with_respect_to": [
         "accounts",
         "auth",
         "warehouse",
         "cargo",
         "services",
+        "notifications",
+        "unassigned",
+        "flights"
     ],
     "icons": {
         "auth": "fas fa-users-cog",
@@ -175,8 +186,9 @@ JAZZMIN_SETTINGS = {
         "warehouse.ArrivedGroup": "fa-solid fa-layer-group",
         "warehouse.PaymentRequest": "fa-solid fa-credit-card",
         "warehouse.DeliveryQueue": "fa-solid fa-cart-flatbed",
-
-
+        "notifications.Notification": "fas fa-bell",
+        "unassigned.UnassignedCargo": "fas fa-box-open",
+        "flights.Flight": "fas fa-plane",
 
     },
     "default_icon_parents": "fas fa-chevron-circle-right",
@@ -196,4 +208,18 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
         "success": "btn-success"
     }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
 }

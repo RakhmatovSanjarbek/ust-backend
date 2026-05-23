@@ -1,4 +1,3 @@
-<!-- arrived_group_chat.html (to'liq o'zgartirilgan va tuzatilgan) -->
 {% extends "admin/base_site.html" %}
 {% load static %}
 
@@ -6,628 +5,721 @@
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #f5f7fa; }
-    .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
-    .card { background: white; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
-    .card-header { padding: 18px 24px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 16px; color: #1e293b; }
-    .card-body { padding: 24px; }
-    .form-group { margin-bottom: 20px; }
-    label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
-    select, input[type="text"], input[type="number"], input[type="file"] { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; transition: all 0.2s; background: white; }
-    select:focus, input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
-    .cargo-list { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 16px; }
-    .cargo-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
-    .cargo-item:hover { background: #f8fafc; }
-    .cargo-item.selected { background: #eff6ff; }
-    .cargo-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 14px; cursor: pointer; accent-color: #3b82f6; }
-    .cargo-info { flex: 1; }
-    .track-code { font-weight: 600; color: #0f172a; margin-bottom: 2px; }
-    .flight-name { font-size: 11px; color: #64748b; }
-    .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #fef3c7; color: #d97706; }
-    .selected-info { margin-top: 24px; padding: 20px; background: #f8fafc; border-radius: 16px; }
-    .summary-box { margin-top: 16px; padding: 16px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
-    .btn { padding: 12px 28px; border: none; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
-    .btn-success { background: #10b981; color: white; }
-    .btn-success:hover { background: #059669; transform: translateY(-1px); }
-    .btn-secondary { background: #64748b; color: white; }
-    .btn-secondary:hover { background: #475569; }
-    .btn-danger { background: #ef4444; color: white; }
-    .btn-danger:hover { background: #dc2626; }
-    .image-preview { max-width: 100%; max-height: 150px; margin-top: 12px; border-radius: 12px; object-fit: cover; }
-    .alert { padding: 14px 18px; border-radius: 16px; margin-top: 20px; }
-    .alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-    .alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-    .empty-state { text-align: center; padding: 40px; color: #64748b; }
-    .group-table { width: 100%; border-collapse: collapse; }
-    .group-table th, .group-table td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    .group-table th { background: #f1f5f9; font-weight: 600; color: #334155; font-size: 13px; }
-    .group-table tr:hover { background: #f8fafc; }
-    .badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
-    .badge-warning { background: #fef3c7; color: #d97706; }
-    .badge-info { background: #dbeafe; color: #2563eb; }
-    .badge-success { background: #d1fae5; color: #059669; }
-    .badge-danger { background: #fee2e2; color: #dc2626; }
-    .badge-secondary { background: #e2e8f0; color: #475569; }
-    .grid-2 { display: flex; gap: 24px; flex-wrap: wrap; }
-    .grid-2 > * { flex: 1; min-width: 300px; }
-    .camera-section { margin-top: 20px; padding: 20px; background: #f1f5f9; border-radius: 16px; }
-    .camera-preview { width: 100%; max-width: 400px; border-radius: 16px; margin-top: 10px; }
-    .stats-badge { display: inline-block; padding: 6px 12px; background: #e2e8f0; border-radius: 30px; font-size: 12px; margin-right: 8px; }
-    .selected-cargos-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-    .search-input-cargos { max-width: 300px; }
-    .image-upload-section { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
-    .upload-method { flex: 1; min-width: 250px; padding: 15px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .upload-method h4 { margin-bottom: 15px; color: #1e293b; }
-    .current-image { margin-top: 15px; padding: 10px; background: #f8fafc; border-radius: 8px; text-align: center; }
-    .current-image img { max-width: 100%; max-height: 150px; border-radius: 8px; }
-    @media (max-width: 768px) { .container { padding: 10px; } .card-body { padding: 16px; } }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #f5f7fa; }
+.pg-container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
+.card { background: white; border-radius: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-bottom: 24px; overflow: hidden; }
+.card-header { padding: 18px 24px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; font-weight: 600; font-size: 16px; color: #1e293b; }
+.card-body { padding: 24px; }
+.form-group { margin-bottom: 20px; }
+label { display: block; margin-bottom: 8px; font-weight: 500; color: #334155; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+input[type="text"], input[type="number"], input[type="file"], textarea { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; outline: none; transition: all 0.2s; background: white; }
+input:focus, textarea:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.cargo-list { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 0 0 16px 16px; }
+.cargo-item { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
+.cargo-item:hover { background: #f8fafc; }
+.cargo-item.selected { background: #eff6ff; }
+.cargo-item input[type="checkbox"] { width: 18px; height: 18px; margin-right: 14px; cursor: pointer; accent-color: #3b82f6; flex-shrink: 0; }
+.cargo-info { flex: 1; }
+.track-code { font-weight: 600; color: #0f172a; margin-bottom: 2px; }
+.flight-name { font-size: 11px; color: #64748b; }
+.status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; background: #fef3c7; color: #d97706; }
+.select-all-bar { display: flex; align-items: center; padding: 10px 16px; background: #f1f5f9; border: 1px solid #e2e8f0; border-bottom: 2px solid #e2e8f0; border-radius: 16px 16px 0 0; }
+.select-all-bar input[type="checkbox"] { width: 18px; height: 18px; margin-right: 10px; accent-color: #3b82f6; cursor: pointer; flex-shrink: 0; }
+.select-all-bar label { font-weight: 600; color: #1e293b; margin: 0; cursor: pointer; text-transform: none; letter-spacing: 0; font-size: 14px; }
+.summary-box { margin-top: 16px; padding: 16px 20px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius: 16px; color: white; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+.btn { padding: 10px 24px; border: none; border-radius: 40px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; display: inline-block; text-decoration: none; }
+.btn-success { background: #10b981; color: white; }
+.btn-success:hover { background: #059669; }
+.btn-secondary { background: #64748b; color: white; }
+.btn-secondary:hover { background: #475569; }
+.btn-danger { background: #ef4444; color: white; }
+.btn-primary { background: #3b82f6; color: white; }
+.btn-primary:hover { background: #2563eb; }
+.btn-warning { background: #f59e0b; color: white; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.alert { padding: 14px 18px; border-radius: 16px; margin-top: 20px; }
+.alert-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+.empty-state { text-align: center; padding: 40px; color: #64748b; }
+.group-table { width: 100%; border-collapse: collapse; }
+.group-table th, .group-table td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+.group-table th { background: #f1f5f9; font-weight: 600; color: #334155; font-size: 13px; }
+.group-table tr:hover td { background: #f8fafc; }
+.badge { display: inline-block; padding: 4px 12px; border-radius: 30px; font-size: 11px; font-weight: 600; }
+.badge-warning { background: #fef3c7; color: #d97706; }
+.badge-info { background: #dbeafe; color: #2563eb; }
+.badge-success { background: #d1fae5; color: #059669; }
+.badge-danger { background: #fee2e2; color: #dc2626; }
+.badge-secondary { background: #e2e8f0; color: #475569; }
+.grid-2 { display: flex; gap: 24px; flex-wrap: wrap; }
+.grid-2 > * { flex: 1; min-width: 300px; }
+.stats-badge { display: inline-block; padding: 6px 12px; background: #e2e8f0; border-radius: 30px; font-size: 12px; }
+.image-upload-section { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+.upload-method { flex: 1; min-width: 250px; padding: 15px; background: white; border-radius: 12px; border: 1px solid #e2e8f0; }
+.upload-method h4 { margin-bottom: 15px; color: #1e293b; font-size: 14px; }
+.search-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-bar input { flex: 1; min-width: 200px; }
+.new-tracks-box { margin-top: 16px; padding: 16px; background: #fff7ed; border-radius: 12px; border: 1px solid #fed7aa; }
+.new-tracks-box label { color: #c2410c; }
+.new-tracks-box p { font-size: 12px; color: #9a3412; margin-bottom: 8px; text-transform: none; letter-spacing: 0; font-weight: 400; }
+.new-tracks-box textarea { border-color: #fed7aa; font-family: monospace; min-height: 90px; }
+/* MODAL */
+.pg-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 99999; justify-content: center; align-items: center; }
+.pg-modal-overlay.active { display: flex !important; }
+.pg-modal { background: white; border-radius: 20px; padding: 28px; max-width: 480px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; z-index: 100000; }
+.pg-modal h3 { margin-bottom: 16px; color: #1e293b; }
+.track-input-area { width: 100%; min-height: 120px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; resize: vertical; font-family: monospace; }
+/* RECEIPT */
+.receipt-wrap { background: white; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 24px; text-align: center; max-width: 320px; margin: 0 auto; }
+.receipt-title { font-size: 20px; font-weight: 800; color: #0f172a; letter-spacing: 1px; }
+.receipt-sub { font-size: 12px; color: #64748b; margin-top: 4px; margin-bottom: 16px; }
+.receipt-qr { display: flex; justify-content: center; margin: 12px 0; }
+.receipt-divider { border: none; border-top: 1px dashed #cbd5e1; margin: 12px 0; }
+.receipt-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 13px; }
+.receipt-row .lbl { color: #64748b; }
+.receipt-row .val { font-weight: 600; color: #0f172a; }
+.receipt-footer { font-size: 11px; color: #94a3b8; margin-top: 12px; }
+@media print {
+    body * { visibility: hidden; }
+    #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
+    #receiptPrintArea { position: fixed; left: 50%; top: 0; transform: translateX(-50%); width: 80mm; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1 style="margin-bottom: 24px;">🏪 Punktga qabul boshqaruvi</h1>
+<div class="pg-container">
+<h1 style="margin-bottom:24px;">🏪 Punktga qabul boshqaruvi</h1>
 
-    <!-- Yangi guruh yaratish -->
-    <div class="card">
-        <div class="card-header">➕ Yangi guruh yaratish</div>
-        <div class="card-body">
-            <div class="grid-2">
-                <div>
-                    <div class="form-group">
-                        <label>👤 Foydalanuvchi</label>
-                        <select id="userSelect" class="form-select" style="width: 100%;">
-                            <option value="">-- Qidirish yoki tanlash --</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="flightGroup" style="display: none;">
-                        <label>✈️ Reys</label>
-                        <select id="flightSelect" class="form-select" style="width: 100%;">
-                            <option value="">-- Qidirish yoki tanlash --</option>
-                        </select>
-                    </div>
-                </div>
-                <div id="cargosGroup" style="display: none;">
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="🔍 Trek kodi bo‘yicha qidirish" class="search-input-cargos">
-                    </div>
-                    <div id="cargosList" class="cargo-list">
-                        <div class="empty-state">Avval foydalanuvchi va reysni tanlang</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Rasm yuklash bo'limi (ham kamera, ham fayl) -->
-            <div id="imageUploadSection" style="display: none;">
-                <div class="image-upload-section">
-                    <!-- Fayl yuklash usuli -->
-                    <div class="upload-method">
-                        <h4>📁 Fayldan yuklash</h4>
-                        <input type="file" id="fileInput" accept="image/*" style="margin-bottom: 10px;">
-                        <div id="filePreview"></div>
-                    </div>
-
-                    <!-- Kamera orqali olish usuli -->
-                    <div class="upload-method">
-                        <h4>📸 Kamera orqali olish</h4>
-                        <div>
-                            <video id="cameraVideo" autoplay playsinline style="width: 100%; max-width: 100%; border-radius: 12px; background: #000; display: none;"></video>
-                            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button type="button" id="startCameraBtn" class="btn btn-secondary" style="padding: 8px 16px;">🎥 Kamerani yoqish</button>
-                                <button type="button" id="takePhotoBtn" class="btn btn-success" style="padding: 8px 16px;" disabled>📸 Rasm olish</button>
-                                <button type="button" id="stopCameraBtn" class="btn btn-danger" style="padding: 8px 16px; display: none;">⏹️ Stop</button>
-                            </div>
-                            <div id="cameraPreview"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Joriy tanlangan rasm -->
-                <div id="currentImageDisplay" class="current-image" style="display: none;">
-                    <strong>✅ Tanlangan rasm:</strong>
-                    <div id="selectedImagePreview"></div>
-                    <button type="button" id="clearImageBtn" class="btn btn-secondary" style="padding: 5px 10px; margin-top: 5px;">🗑️ Rasmni o'chirish</button>
-                </div>
-            </div>
-
-            <!-- Tanlangan yuklar soni va umumiy ma'lumotlar -->
-            <div id="selectedSection" style="display: none; margin-top: 24px;">
-                <div class="selected-cargos-header">
-                    <h3 style="margin: 0;">✅ Tanlangan yuklar</h3>
-                    <div class="stats-badge" id="selectedCount">0 ta yuk tanlangan</div>
-                </div>
-
-                <div class="selected-info">
-                    <div style="margin-bottom: 16px;">
-                        <label>⚖️ Jami og‘irlik (kg)</label>
-                        <input type="number" id="totalWeightInput" class="form-control" step="0.1" value="0" placeholder="Jami og‘irlikni kiriting" style="margin-top: 5px;">
-                    </div>
-                    <div>
-                        <label>💰 Jami summa (so‘m)</label>
-                        <input type="number" id="totalPriceInput" class="form-control" step="1000" value="0" placeholder="Jami summani kiriting" style="margin-top: 5px;">
-                    </div>
-                </div>
-
-                <div class="summary-box" style="margin-top: 16px;">
-                    <span>📦 Tanlangan yuklar: <strong id="selectedCountSummary">0</strong> ta</span>
-                    <span>⚖ Jami og‘irlik: <strong id="totalWeightDisplay">0</strong> kg</span>
-                    <span>💰 Jami summa: <strong id="totalPriceDisplay">0</strong> so‘m</span>
-                </div>
-            </div>
-
-            <div style="margin-top: 24px; text-align: right;">
-                <button id="createGroupBtn" class="btn btn-success">✓ Guruh yaratish</button>
-            </div>
-            <div id="result"></div>
+<!-- YANGI GURUH -->
+<div class="card">
+  <div class="card-header">➕ Yangi guruh yaratish</div>
+  <div class="card-body">
+    <div class="grid-2">
+      <div>
+        <div class="form-group">
+          <label>👤 Foydalanuvchi</label>
+          <select id="userSelect" style="width:100%;"></select>
         </div>
+        <div class="form-group" id="flightGroup" style="display:none;">
+          <label>✈️ Reys</label>
+          <select id="flightSelect" style="width:100%;"></select>
+        </div>
+      </div>
+      <div id="cargosGroup" style="display:none;">
+        <input type="text" id="searchInput" placeholder="🔍 Trek kodi bo'yicha qidirish" style="margin-bottom:8px;">
+        <div class="select-all-bar">
+          <input type="checkbox" id="selectAllCb">
+          <label for="selectAllCb">Hammasini tanlash / bekor qilish</label>
+          <span id="selectAllCount" style="margin-left:auto;font-size:12px;color:#64748b;"></span>
+        </div>
+        <div id="cargosList" class="cargo-list">
+          <div class="empty-state">Avval foydalanuvchi va reysni tanlang</div>
+        </div>
+      </div>
     </div>
 
-    <!-- Guruhlar ro'yxati -->
-    <div class="card">
-        <div class="card-header">📋 Guruhlar ro'yxati</div>
-        <div class="card-body">
-            <div style="overflow-x: auto;">
-                <table class="group-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Res kodi (Reys)</th>
-                            <th>Foydalanuvchi</th>
-                            <th>Rasm</th>
-                            <th>Jami og'irlik</th>
-                            <th>Jami summa</th>
-                            <th>To'lov holati</th>
-                            <th>Yetkazish usuli</th>
-                            <th>Manzil</th>
-                            <th>Yaratilgan</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="groupsList">
-                        <tr><td colspan="11" class="empty-state">Yuklanmoqda...</td></tr>
-                    </tbody>
-                </table>
-            </div>
+    <!-- Rasm -->
+    <div id="imageUploadSection" style="display:none;">
+      <div class="image-upload-section">
+        <div class="upload-method">
+          <h4>📁 Fayldan yuklash</h4>
+          <input type="file" id="fileInput" accept="image/*">
+          <div id="filePreview"></div>
         </div>
+        <div class="upload-method">
+          <h4>📸 Kamera</h4>
+          <video id="cameraVideo" autoplay playsinline style="width:100%;border-radius:10px;background:#000;display:none;"></video>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" id="startCameraBtn" class="btn btn-secondary btn-sm">🎥 Yoqish</button>
+            <button type="button" id="takePhotoBtn" class="btn btn-success btn-sm" disabled>📸 Rasm</button>
+            <button type="button" id="stopCameraBtn" class="btn btn-danger btn-sm" style="display:none;">⏹ Stop</button>
+          </div>
+          <div id="cameraPreview"></div>
+        </div>
+      </div>
+      <div id="currentImageDisplay" style="display:none;margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;text-align:center;">
+        <strong>✅ Tanlangan rasm:</strong>
+        <div id="selectedImagePreview"></div>
+        <button type="button" id="clearImageBtn" class="btn btn-secondary btn-sm" style="margin-top:6px;">🗑️ O'chirish</button>
+      </div>
     </div>
+
+    <!-- Tanlangan yuklar -->
+    <div id="selectedSection" style="display:none;margin-top:24px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+        <h3 style="margin:0;">✅ Tanlangan yuklar</h3>
+        <span class="stats-badge" id="selectedCount">0 ta</span>
+      </div>
+      <div style="padding:20px;background:#f8fafc;border-radius:16px;">
+        <div style="margin-bottom:16px;">
+          <label>⚖️ Jami og'irlik (kg)</label>
+          <input type="number" id="totalWeightInput" step="0.1" value="0" style="margin-top:6px;">
+        </div>
+        <div>
+          <label>💵 Jami summa (USD $)</label>
+          <input type="number" id="totalPriceInput" step="0.01" value="0" placeholder="0.00" style="margin-top:6px;">
+        </div>
+      </div>
+
+      <!-- Yangi trek kodlar -->
+      <div class="new-tracks-box">
+        <label>➕ Qo'shimcha yangi trek kodlar (ixtiyoriy)</label>
+        <p>Bazada yo'q yangi trek kodlarni shu yerga kiriting — ular avtomatik yaratiladi va guruhga qo'shiladi.</p>
+        <textarea id="newTrackCodesInput" placeholder="Har biri yangi qatorda:&#10;YT2538249811530&#10;YT2538249811531"></textarea>
+      </div>
+
+      <div class="summary-box">
+        <span>📦 <strong id="selectedCountSummary">0</strong> ta yuk</span>
+        <span>⚖ <strong id="totalWeightDisplay">0</strong> kg</span>
+        <span>💵 $<strong id="totalPriceDisplay">0</strong></span>
+      </div>
+    </div>
+
+    <div style="margin-top:24px;text-align:right;">
+      <button id="createGroupBtn" class="btn btn-success">✓ Guruh yaratish</button>
+    </div>
+    <div id="result"></div>
+  </div>
+</div>
+
+<!-- GURUHLAR RO'YXATI -->
+<div class="card">
+  <div class="card-header">📋 Guruhlar ro'yxati</div>
+  <div class="card-body">
+    <div class="search-bar">
+      <input type="text" id="groupSearchFlight" placeholder="🔍 Reys raqami bo'yicha...">
+      <input type="text" id="groupSearchUser" placeholder="👤 Ism yoki User ID bo'yicha...">
+      <button class="btn btn-secondary btn-sm" onclick="filterGroups()">🔍 Qidirish</button>
+      <button class="btn btn-secondary btn-sm" onclick="clearGroupSearch()">✕ Tozalash</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="group-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Res kodi</th><th>Foydalanuvchi</th><th>Rasm</th>
+            <th>Og'irlik</th><th>Summa</th><th>To'lov holati</th>
+            <th>Yetkazish</th><th>Manzil</th><th>Yaratilgan</th><th>Amallar</th>
+          </tr>
+        </thead>
+        <tbody id="groupsList">
+          <tr><td colspan="11" class="empty-state">Yuklanmoqda...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- GURUHGA YUK QO'SHISH MODAL -->
+<div class="pg-modal-overlay" id="addCargoModal">
+  <div class="pg-modal">
+    <h3>➕ Guruhga yuk qo'shish</h3>
+    <p style="color:#64748b;margin-bottom:16px;font-size:13px;">Guruh: <strong id="modalGroupCode"></strong></p>
+    <label style="text-transform:none;letter-spacing:0;font-weight:500;font-size:14px;">Trek kodlarini kiriting (har biri yangi qatorda):</label>
+    <textarea id="trackCodesInput" class="track-input-area" style="margin-top:8px;" placeholder="YT2538249811516&#10;YT2538249811517"></textarea>
+    <div id="addCargoResult" style="margin-top:12px;"></div>
+    <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModal('addCargoModal')">❌ Bekor</button>
+      <button class="btn btn-success" onclick="submitAddCargos()">✅ Qo'shish</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHEK MODAL -->
+<div class="pg-modal-overlay" id="receiptModal">
+  <div class="pg-modal" style="max-width:400px;">
+    <div id="receiptPrintArea">
+      <div class="receipt-wrap">
+        <div class="receipt-title">📦 UTS CARGO</div>
+        <div class="receipt-sub">Yuk qabul cheki</div>
+        <div class="receipt-qr"><div id="qrCodeBox"></div></div>
+        <hr class="receipt-divider">
+        <div class="receipt-row"><span class="lbl">Reys:</span><span class="val" id="rcFlight">—</span></div>
+        <div class="receipt-row"><span class="lbl">Mijoz:</span><span class="val" id="rcUserName">—</span></div>
+        <div class="receipt-row"><span class="lbl">UTS ID:</span><span class="val" id="rcUserId">—</span></div>
+        <div class="receipt-row"><span class="lbl">Yuklar:</span><span class="val" id="rcCount">—</span></div>
+        <div class="receipt-row"><span class="lbl">Og'irlik:</span><span class="val" id="rcWeight">—</span></div>
+        <div class="receipt-row"><span class="lbl">Summa:</span><span class="val" id="rcPrice">—</span></div>
+        <div class="receipt-row"><span class="lbl">Sana:</span><span class="val" id="rcDate">—</span></div>
+        <hr class="receipt-divider">
+        <div class="receipt-footer">UTS Cargo — Ishonchli yetkazib berish xizmati</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:16px;justify-content:center;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="downloadReceipt()">⬇️ Yuklab olish</button>
+      <button class="btn btn-warning btn-sm" onclick="window.print()">🖨️ Chop etish</button>
+      <button class="btn btn-secondary btn-sm" onclick="closeModal('receiptModal')">❌ Yopish</button>
+    </div>
+  </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
-    let selectedUser = null;
-    let selectedCargos = new Map(); // id -> {track_code, flight_name}
-    let allCargos = [];
-    let currentStream = null;
-    let currentImageFile = null; // Tanlangan rasm fayli
+var selectedUser = null;
+var selectedCargos = new Map();
+var allCargos = [];
+var allGroups = [];
+var currentGroupId = null;
+var currentStream = null;
+var currentImageFile = null;
 
-    // Select2 sozlamalari
-    $('#userSelect').select2({
-        theme: 'bootstrap-5',
-        placeholder: '👤 Foydalanuvchini qidirish (ism, telefon, ID)...',
-        allowClear: true,
-        ajax: {
-            url: '/admin/warehouse/arrivedgroup/api/users/search/',
-            dataType: 'json',
-            delay: 300,
-            data: function(params) {
-                return { q: params.term };
-            },
-            processResults: function(data) {
-                return { results: data.results };
-            },
-            cache: true
-        },
-        minimumInputLength: 1,
-        templateResult: formatUser,
-        templateSelection: formatUserSelection
-    });
+// ===== SELECT2 =====
+$('#userSelect').select2({
+    theme: 'bootstrap-5', placeholder: '👤 Foydalanuvchini qidirish...', allowClear: true,
+    ajax: {
+        url: '/admin/warehouse/arrivedgroup/api/users/search/',
+        dataType: 'json', delay: 300,
+        data: function(p) { return { q: p.term || '' }; },
+        processResults: function(d) { return { results: d.results }; },
+        cache: true
+    },
+    minimumInputLength: 1,
+    templateResult: function(u) {
+        if (u.loading) return u.text;
+        return $('<div><strong>' + (u.name || u.text) + '</strong><br><small>🆔 ' + (u.user_id || '—') + ' | 📞 ' + (u.phone || '—') + '</small></div>');
+    },
+    templateSelection: function(u) { return u.name || u.text; }
+});
 
-    function formatUser(user) {
-        if (user.loading) return user.text;
-        return $(`<div><strong>${user.name}</strong><br/><small>🆔 ${user.user_id || '—'} | 📞 ${user.phone || '—'}</small></div>`);
-    }
+$('#flightSelect').select2({
+    theme: 'bootstrap-5', placeholder: '✈️ Reysni tanlang...', allowClear: true,
+    ajax: {
+        url: function() { return selectedUser ? '/admin/warehouse/arrivedgroup/api/flights/' + selectedUser + '/' : null; },
+        dataType: 'json', delay: 200,
+        data: function(p) { return { q: p.term || '' }; },
+        processResults: function(d) { return { results: d.results || [] }; },
+        cache: false
+    },
+    minimumInputLength: 0,
+    minimumResultsForSearch: 0
+});
 
-    function formatUserSelection(user) {
-        return user.name || user.text;
-    }
-
-    // Reys Select2
-    $('#flightSelect').select2({
-        theme: 'bootstrap-5',
-        placeholder: '✈️ Reysni qidirish...',
-        allowClear: true,
-        ajax: {
-            url: function() {
-                return selectedUser ? `/admin/warehouse/arrivedgroup/api/flights/search/${selectedUser}/` : null;
-            },
-            dataType: 'json',
-            delay: 300,
-            data: function(params) {
-                return { q: params.term };
-            },
-            processResults: function(data) {
-                return { results: data.results || [] };
-            },
-            cache: true
-        },
-        minimumInputLength: 1
-    });
-
-    $('#userSelect').on('change', function() {
-        const userId = $(this).val();
-        if (!userId) {
-            $('#flightGroup, #cargosGroup, #imageUploadSection, #selectedSection').hide();
-            selectedUser = null;
-            $('#flightSelect').val(null).trigger('change');
-            return;
-        }
-        selectedUser = userId;
-        $('#flightGroup').show();
+// ===== USER =====
+$('#userSelect').on('change', function() {
+    var userId = $(this).val();
+    if (!userId) {
+        selectedUser = null;
+        selectedCargos.clear(); allCargos = [];
+        $('#flightGroup, #cargosGroup, #imageUploadSection, #selectedSection').hide();
         $('#flightSelect').val(null).trigger('change');
-        $('#flightSelect').select2('open');
-    });
-
-    $('#flightSelect').on('change', function() {
-        const flightName = $(this).val();
-        if (!flightName || !selectedUser) {
-            $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
-            return;
-        }
-        loadCargos(selectedUser, flightName);
-        $('#cargosGroup, #imageUploadSection').show();
-    });
-
-    function loadCargos(userId, flightName) {
-        $('#cargosList').html('<div class="empty-state">⏳ Yuklar yuklanmoqda...</div>');
-        $.get(`/admin/warehouse/arrivedgroup/api/cargos/${userId}/${encodeURIComponent(flightName)}/`, function(cargos) {
-            allCargos = cargos;
-            renderCargosList(cargos);
-            if (cargos.length === 0) $('#cargosList').html('<div class="empty-state">📭 Bu reysda yuklar yo\'q</div>');
-        });
-    }
-
-    function renderCargosList(cargos) {
-        const container = $('#cargosList').empty();
-        const term = $('#searchInput').val().toLowerCase();
-        const filtered = cargos.filter(c => c.track_code.toLowerCase().includes(term));
-        if (filtered.length === 0) { container.html('<div class="empty-state">🔍 Trek kodi topilmadi</div>'); return; }
-
-        filtered.forEach(cargo => {
-            const checked = selectedCargos.has(cargo.id);
-            container.append(`
-                <div class="cargo-item ${checked ? 'selected' : ''}" data-id="${cargo.id}">
-                    <input type="checkbox" class="cargo-checkbox" data-id="${cargo.id}" ${checked ? 'checked' : ''}>
-                    <div class="cargo-info">
-                        <div class="track-code">📦 ${cargo.track_code}</div>
-                        <div class="flight-name">✈️ ${cargo.flight_name}</div>
-                    </div>
-                    <span class="status-badge">🚚 Yo'lda</span>
-                </div>
-            `);
-        });
-
-        $('.cargo-checkbox').off('change').on('change', function() {
-            const id = parseInt($(this).data('id'));
-            const cargo = allCargos.find(c => c.id === id);
-            if ($(this).is(':checked')) {
-                selectedCargos.set(id, { track_code: cargo.track_code, flight_name: cargo.flight_name });
-                $('#selectedSection').show();
-            } else {
-                selectedCargos.delete(id);
-                if (selectedCargos.size === 0) $('#selectedSection').hide();
-            }
-            updateSelectedDisplay();
-            renderCargosList(allCargos);
-        });
-
-        $('.cargo-item').off('click').on('click', function(e) {
-            if (e.target.type !== 'checkbox') {
-                $(this).find('.cargo-checkbox').prop('checked', !$(this).find('.cargo-checkbox').prop('checked')).trigger('change');
-            }
-        });
-    }
-
-    function updateSelectedDisplay() {
-        const count = selectedCargos.size;
-        $('#selectedCount').text(`${count} ta yuk tanlangan`);
-        $('#selectedCountSummary').text(count);
-
-        if (count === 0) {
-            $('#selectedSection').hide();
-        } else {
-            $('#selectedSection').show();
-        }
-    }
-
-    function updateTotals() {
-        const weight = parseFloat($('#totalWeightInput').val()) || 0;
-        const price = parseFloat($('#totalPriceInput').val()) || 0;
-        $('#totalWeightDisplay').text(weight.toFixed(2));
-        $('#totalPriceDisplay').text(price.toLocaleString());
-    }
-
-    $('#totalWeightInput, #totalPriceInput').on('input', updateTotals);
-    $('#searchInput').on('keyup', () => renderCargosList(allCargos));
-
-    // ============ RASM YUKLASH (HAM KAMERA, HAM FAYL) ============
-    let videoElement = document.getElementById('cameraVideo');
-    let isCameraStarted = false;
-
-    // Fayl yuklash
-    $('#fileInput').off('change').on('change', function(e) {
-        const file = e.target.files[0];
-        if (file && file.type.startsWith('image/')) {
-            currentImageFile = file;
-            const reader = new FileReader();
-            reader.onload = function(ev) {
-                $('#filePreview').html(`<img src="${ev.target.result}" class="image-preview" style="max-width: 100%;">`);
-                updateSelectedImageDisplay(ev.target.result);
-            };
-            reader.readAsDataURL(file);
-        } else if (file) {
-            alert('Iltimos, faqat rasm faylini tanlang (jpg, png, gif, webp)');
-            $(this).val('');
-        }
-    });
-
-    // Tanlangan rasmni ko'rsatish
-    function updateSelectedImageDisplay(imageUrl) {
-        $('#selectedImagePreview').html(`<img src="${imageUrl}" style="max-width: 100%; max-height: 120px; border-radius: 8px;">`);
-        $('#currentImageDisplay').show();
-    }
-
-    // Rasmni tozalash
-    $('#clearImageBtn').off('click').on('click', function() {
-        currentImageFile = null;
-        $('#fileInput').val('');
-        $('#filePreview').empty();
-        $('#cameraPreview').empty();
-        $('#selectedImagePreview').empty();
-        $('#currentImageDisplay').hide();
-
-        // Kamerani ham tozalash
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-            currentStream = null;
-            videoElement.style.display = 'none';
-            $('#startCameraBtn').show();
-            $('#stopCameraBtn').hide();
-            $('#takePhotoBtn').prop('disabled', true);
-            isCameraStarted = false;
-        }
-    });
-
-    // Kamerani yoqish
-    $('#startCameraBtn').off('click').on('click', async function() {
-        try {
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-            }
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' } // Orqa kamerani ishlatish
-            });
-            currentStream = stream;
-            videoElement.srcObject = stream;
-            videoElement.style.display = 'block';
-            $('#startCameraBtn').hide();
-            $('#stopCameraBtn').show();
-            $('#takePhotoBtn').prop('disabled', false);
-            isCameraStarted = true;
-        } catch (err) {
-            console.error('Kamera xatosi:', err);
-            alert('Kamera ochilmadi. Iltimos, ruxsatni tekshiring.');
-        }
-    });
-
-    // Rasm olish (faqat bir marta)
-    $('#takePhotoBtn').off('click').on('click', function() {
-        if (!isCameraStarted || !currentStream) {
-            alert('Iltimos, avval kamerani yoqing');
-            return;
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = videoElement.videoWidth;
-        canvas.height = videoElement.videoHeight;
-        const context = canvas.getContext('2d');
-        context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-
-        // Rasmni blobga aylantirish
-        canvas.toBlob(function(blob) {
-            if (currentImageFile) {
-                // Agar oldingi rasm bo'lsa, uni o'chirish
-                URL.revokeObjectURL(URL.createObjectURL(currentImageFile));
-            }
-            currentImageFile = new File([blob], `cargo_photo_${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const imageUrl = URL.createObjectURL(blob);
-
-            // Kameradan olingan rasmni ko'rsatish
-            $('#cameraPreview').html(`<img src="${imageUrl}" class="image-preview" style="max-width: 100%; margin-top: 10px;">`);
-            updateSelectedImageDisplay(imageUrl);
-
-            // Kamerani avtomatik to'xtatish (ixtiyoriy)
-            if (currentStream) {
-                currentStream.getTracks().forEach(track => track.stop());
-                currentStream = null;
-                videoElement.style.display = 'none';
-                $('#startCameraBtn').show();
-                $('#stopCameraBtn').hide();
-                $('#takePhotoBtn').prop('disabled', true);
-                isCameraStarted = false;
-            }
-        }, 'image/jpeg', 0.9);
-    });
-
-    // Kamerani to'xtatish
-    $('#stopCameraBtn').off('click').on('click', function() {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-            currentStream = null;
-            videoElement.srcObject = null;
-            videoElement.style.display = 'none';
-            $('#startCameraBtn').show();
-            $('#stopCameraBtn').hide();
-            $('#takePhotoBtn').prop('disabled', true);
-            isCameraStarted = false;
-        }
-    });
-
-    // ============ GURUH YARATISH ============
-    $('#createGroupBtn').off('click').on('click', function() {
-        const flightName = $('#flightSelect').val();
-        if (!flightName) {
-            $('#result').html('<div class="alert alert-error">❌ Reysni tanlang</div>');
-            scrollToResult();
-            return;
-        }
-        if (selectedCargos.size === 0) {
-            $('#result').html('<div class="alert alert-error">❌ Hech qanday yuk tanlanmagan</div>');
-            scrollToResult();
-            return;
-        }
-
-        const totalWeight = parseFloat($('#totalWeightInput').val()) || 0;
-        const totalPrice = parseFloat($('#totalPriceInput').val()) || 0;
-
-        if (totalWeight <= 0 && totalPrice <= 0) {
-            if (!confirm("Og'irlik va summa kiritilmagan. Davom etilsinmi?")) return;
-        }
-
-        const cargoIds = Array.from(selectedCargos.keys());
-
-        const formData = new FormData();
-        formData.append('user_id', selectedUser);
-        formData.append('flight_name', flightName);
-        formData.append('cargo_ids', JSON.stringify(cargoIds));
-        formData.append('total_weight', totalWeight);
-        formData.append('total_price', totalPrice);
-
-        // Rasm faylini qo'shish (agar mavjud bo'lsa)
-        if (currentImageFile) {
-            formData.append('image', currentImageFile);
-        }
-
-        const btn = $(this);
-        btn.prop('disabled', true).text('⏳ Yaratilmoqda...');
-
-        $.ajax({
-            url: '/admin/warehouse/arrivedgroup/api/create-group/',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(res) {
-                if (res.status === 'success') {
-                    $('#result').html(`<div class="alert alert-success">✅ ${res.message}</div>`);
-                    // Formani tozalash
-                    resetForm();
-                    loadGroups();
-                    scrollToResult();
-
-                    setTimeout(() => {
-                        $('#result').fadeOut(3000, function() {
-                            $(this).empty().show();
-                        });
-                    }, 3000);
-                } else {
-                    $('#result').html(`<div class="alert alert-error">❌ ${res.error}</div>`);
-                    scrollToResult();
-                }
-            },
-            error: function(err) {
-                let errorMsg = 'Noma\'lum xatolik';
-                if (err.responseJSON && err.responseJSON.error) {
-                    errorMsg = err.responseJSON.error;
-                } else if (err.responseText) {
-                    try {
-                        const data = JSON.parse(err.responseText);
-                        errorMsg = data.error || errorMsg;
-                    } catch(e) {}
-                }
-                $('#result').html(`<div class="alert alert-error">❌ Xatolik: ${errorMsg}</div>`);
-                scrollToResult();
-            },
-            complete: () => btn.prop('disabled', false).text('✓ Guruh yaratish')
-        });
-    });
-
-    function resetForm() {
-        // Formani tozalash
-        $('#fileInput').val('');
-        $('#filePreview').empty();
-        $('#cameraPreview').empty();
-        $('#selectedImagePreview').empty();
-        $('#currentImageDisplay').hide();
-        currentImageFile = null;
-
-        // Kamerani to'xtatish
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
-            currentStream = null;
-            videoElement.srcObject = null;
-            videoElement.style.display = 'none';
-            $('#startCameraBtn').show();
-            $('#stopCameraBtn').hide();
-            $('#takePhotoBtn').prop('disabled', true);
-            isCameraStarted = false;
-        }
-
-        // Tanlangan yuklarni tozalash
-        selectedCargos.clear();
-        $('#flightSelect').val(null).trigger('change');
-        $('#userSelect').val(null).trigger('change');
-        $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
-        $('#totalWeightInput').val(0);
-        $('#totalPriceInput').val(0);
         updateSelectedDisplay();
-        updateTotals();
+        return;
     }
-
-    function scrollToResult() {
-        $('html, body').animate({
-            scrollTop: $('#result').offset().top - 100
-        }, 500);
-    }
-
-    function loadGroups() {
-        $.get('/admin/warehouse/arrivedgroup/api/groups/', function(groups) {
-            const tbody = $('#groupsList');
-            if (!groups || groups.length === 0) {
-                tbody.html('<tr><td colspan="11" class="empty-state">Hech qanday guruh mavjud emas</td></tr>');
-                return;
-            }
-            tbody.empty();
-            groups.forEach(g => {
-                tbody.append(`
-                    <tr>
-                        <td>${g.id}</td>
-                        <td><strong>${g.receipt_code}</strong></td>
-                        <td>${g.user_name}<br><small>${g.user_id || ''}</small></td>
-                        <td>${g.image ? `<img src="${g.image}" style="width:40px;height:40px;object-fit:cover;border-radius:10px;">` : '—'}</td>
-                        <td>${parseFloat(g.total_weight).toFixed(2)} kg</td>
-                        <td>${parseInt(g.total_price).toLocaleString()} so'm</td>
-                        <td><span class="badge ${g.payment_status_class}">${g.payment_status}</span></td>
-                        <td>${g.delivery_method}</td>
-                        <td style="max-width:200px; white-space:nowrap; overflow-x:auto;">${g.delivery_address}</td>
-                        <td>${g.created_at_display || new Date(g.created_at).toLocaleString()}</td>
-                        <td><a href="/admin/warehouse/arrivedgroup/${g.id}/change/" target="_blank">✏️ Tahrirlash</a></td>
-                    </tr>
-                `);
-            });
-        }).fail(() => $('#groupsList').html('<tr><td colspan="11" class="empty-state">Xatolik yuz berdi</td></tr>'));
-    }
-
-    // Dastlabki yuklash
-    loadGroups();
+    selectedUser = userId;
+    selectedCargos.clear(); allCargos = [];
+    $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
     updateSelectedDisplay();
+    $('#flightSelect').val(null).trigger('change');
+    $('#flightGroup').show();
+});
 
-    // Sahifadan chiqishda kamerani to'xtatish
-    $(window).on('beforeunload', function() {
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => track.stop());
+// ===== REYS =====
+$('#flightSelect').on('change', function() {
+    var flightName = $(this).val();
+    if (!flightName || !selectedUser) {
+        $('#cargosGroup, #imageUploadSection, #selectedSection').hide();
+        selectedCargos.clear(); allCargos = [];
+        updateSelectedDisplay();
+        return;
+    }
+    loadCargos(selectedUser, flightName);
+    $('#cargosGroup, #imageUploadSection').show();
+    // selectedSection faqat yuk tanlanganda ko'rinadi
+});
+
+// ===== YUKLAR =====
+function loadCargos(userId, flightName) {
+    $('#cargosList').html('<div class="empty-state">⏳ Yuklanmoqda...</div>');
+    $('#selectAllCb').prop('checked', false);
+    $.get('/admin/warehouse/arrivedgroup/api/cargos/' + userId + '/' + encodeURIComponent(flightName) + '/', function(data) {
+        allCargos = data;
+        renderCargos();
+        updateSelectAllCount();
+        if (data.length === 0) {
+            $('#cargosList').html('<div class="empty-state">📭 Bu reysda yuklar yo\'q</div>');
         }
     });
+}
+
+function renderCargos() {
+    var term = $('#searchInput').val().toLowerCase();
+    var filtered = allCargos.filter(function(c) { return c.track_code.toLowerCase().indexOf(term) >= 0; });
+    var container = $('#cargosList').empty();
+    if (filtered.length === 0) { container.html('<div class="empty-state">🔍 Topilmadi</div>'); return; }
+    filtered.forEach(function(cargo) {
+        var checked = selectedCargos.has(cargo.id);
+        container.append(
+            '<div class="cargo-item' + (checked ? ' selected' : '') + '" data-id="' + cargo.id + '">' +
+            '<input type="checkbox" class="cargo-cb" data-id="' + cargo.id + '"' + (checked ? ' checked' : '') + '>' +
+            '<div class="cargo-info">' +
+            '<div class="track-code">📦 ' + cargo.track_code + '</div>' +
+            '<div class="flight-name">✈️ ' + cargo.flight_name + '</div>' +
+            '</div><span class="status-badge">🚚 Yo\'lda</span></div>'
+        );
+    });
+    $('.cargo-cb').on('change', function() {
+        var id = parseInt($(this).data('id'));
+        var cargo = allCargos.find(function(c) { return c.id === id; });
+        if ($(this).is(':checked')) {
+            selectedCargos.set(id, cargo);
+        } else {
+            selectedCargos.delete(id);
+        }
+        $(this).closest('.cargo-item').toggleClass('selected', $(this).is(':checked'));
+        updateSelectedDisplay();
+        updateSelectAllCount();
+    });
+    $('.cargo-item').on('click', function(e) {
+        if (e.target.type !== 'checkbox') {
+            var cb = $(this).find('.cargo-cb');
+            cb.prop('checked', !cb.prop('checked')).trigger('change');
+        }
+    });
+}
+
+$('#selectAllCb').on('change', function() {
+    var checked = $(this).is(':checked');
+    var term = $('#searchInput').val().toLowerCase();
+    var filtered = allCargos.filter(function(c) { return c.track_code.toLowerCase().indexOf(term) >= 0; });
+    filtered.forEach(function(c) {
+        if (checked) selectedCargos.set(c.id, c);
+        else selectedCargos.delete(c.id);
+    });
+    updateSelectedDisplay();
+    renderCargos();
+    updateSelectAllCount();
+});
+
+$('#searchInput').on('keyup', function() {
+    renderCargos();
+    updateSelectAllCount();
+    var term = $(this).val().toLowerCase();
+    var filtered = allCargos.filter(function(c) { return c.track_code.toLowerCase().indexOf(term) >= 0; });
+    var allSel = filtered.length > 0 && filtered.every(function(c) { return selectedCargos.has(c.id); });
+    $('#selectAllCb').prop('checked', allSel);
+});
+
+function updateSelectAllCount() {
+    var term = $('#searchInput').val().toLowerCase();
+    var cnt = allCargos.filter(function(c) { return c.track_code.toLowerCase().indexOf(term) >= 0; }).length;
+    $('#selectAllCount').text('Jami: ' + cnt + ' ta');
+}
+
+function updateSelectedDisplay() {
+    var cnt = selectedCargos.size;
+    $('#selectedCount, #selectedCountSummary').text(cnt + ' ta');
+    if (cnt > 0) {
+        $('#selectedSection').show();
+    } else {
+        // selectedSection ni faqat yuk bo'lmasa yashiramiz
+        // Agar newTrackCodes kiritilgan bo'lsa ham ko'rinsin
+        if (!$('#newTrackCodesInput').val().trim()) {
+            $('#selectedSection').hide();
+        }
+    }
+}
+
+$('#totalWeightInput').on('input', function() { $('#totalWeightDisplay').text(parseFloat($(this).val()) || 0); });
+$('#totalPriceInput').on('input', function() { $('#totalPriceDisplay').text(parseFloat($(this).val()) || 0); });
+
+// newTrackCodes kiritilsa selectedSection ko'rinsin
+$('#newTrackCodesInput').on('input', function() {
+    if ($(this).val().trim()) {
+        $('#selectedSection').show();
+    } else {
+        updateSelectedDisplay();
+    }
+});
+
+// ===== RASM =====
+$('#fileInput').on('change', function() {
+    var file = this.files[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    currentImageFile = file;
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        $('#filePreview').html('<img src="' + e.target.result + '" style="max-width:100%;max-height:120px;border-radius:10px;margin-top:8px;">');
+        showSelectedImg(e.target.result);
+    };
+    reader.readAsDataURL(file);
+});
+
+function showSelectedImg(url) {
+    $('#selectedImagePreview').html('<img src="' + url + '" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:6px;">');
+    $('#currentImageDisplay').show();
+}
+
+$('#clearImageBtn').on('click', function() {
+    currentImageFile = null;
+    $('#fileInput').val('');
+    $('#filePreview, #cameraPreview, #selectedImagePreview').empty();
+    $('#currentImageDisplay').hide();
+    stopCamera();
+});
+
+$('#startCameraBtn').on('click', async function() {
+    try {
+        var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        currentStream = stream;
+        var v = document.getElementById('cameraVideo');
+        v.srcObject = stream; v.style.display = 'block';
+        $('#startCameraBtn').hide(); $('#stopCameraBtn').show(); $('#takePhotoBtn').prop('disabled', false);
+    } catch(e) { alert('Kamera ochilmadi'); }
+});
+
+$('#takePhotoBtn').on('click', function() {
+    var v = document.getElementById('cameraVideo');
+    var c = document.createElement('canvas');
+    c.width = v.videoWidth; c.height = v.videoHeight;
+    c.getContext('2d').drawImage(v, 0, 0);
+    c.toBlob(function(blob) {
+        currentImageFile = new File([blob], 'photo_' + Date.now() + '.jpg', { type: 'image/jpeg' });
+        var url = URL.createObjectURL(blob);
+        $('#cameraPreview').html('<img src="' + url + '" style="max-width:100%;max-height:120px;border-radius:10px;margin-top:8px;">');
+        showSelectedImg(url);
+        stopCamera();
+    }, 'image/jpeg', 0.9);
+});
+
+$('#stopCameraBtn').on('click', stopCamera);
+
+function stopCamera() {
+    if (currentStream) { currentStream.getTracks().forEach(function(t) { t.stop(); }); currentStream = null; }
+    document.getElementById('cameraVideo').style.display = 'none';
+    $('#startCameraBtn').show(); $('#stopCameraBtn').hide(); $('#takePhotoBtn').prop('disabled', true);
+}
+
+// ===== GURUH YARATISH =====
+$('#createGroupBtn').on('click', function() {
+    var flightName = $('#flightSelect').val();
+    if (!flightName) { showResult('error', '❌ Reysni tanlang'); return; }
+
+    var hasCargos = selectedCargos.size > 0;
+    var hasNewCodes = $('#newTrackCodesInput').val().trim().length > 0;
+    if (!hasCargos && !hasNewCodes) {
+        showResult('error', '❌ Kamida bitta yuk tanlang yoki yangi trek kodi kiriting');
+        return;
+    }
+
+    var w = parseFloat($('#totalWeightInput').val()) || 0;
+    var p = parseFloat($('#totalPriceInput').val()) || 0;
+
+    var fd = new FormData();
+    fd.append('user_id', selectedUser);
+    fd.append('flight_name', flightName);
+    fd.append('cargo_ids', JSON.stringify(Array.from(selectedCargos.keys())));
+    fd.append('total_weight', w);
+    fd.append('total_price', p);
+    fd.append('new_track_codes', $('#newTrackCodesInput').val().trim());
+    if (currentImageFile) fd.append('image', currentImageFile);
+
+    var btn = $(this).prop('disabled', true).text('⏳ Yaratilmoqda...');
+
+    $.ajax({
+        url: '/admin/warehouse/arrivedgroup/api/create-group/',
+        type: 'POST', data: fd, processData: false, contentType: false,
+        success: function(res) {
+            if (res.status === 'success') {
+                showResult('success', res.message);
+                openReceipt({
+                    receipt_code: res.group.receipt_code,
+                    user_name: res.group.user_name,
+                    user_id: res.group.user_id,
+                    cargo_count: res.group.cargo_count || selectedCargos.size,
+                    total_weight: w,
+                    total_price: p
+                });
+                resetForm();
+                loadGroups();
+            } else {
+                showResult('error', '❌ ' + res.error);
+            }
+        },
+        error: function(e) {
+            var msg = (e.responseJSON && e.responseJSON.error) ? e.responseJSON.error : 'Xatolik yuz berdi';
+            showResult('error', '❌ ' + msg);
+        },
+        complete: function() { btn.prop('disabled', false).text('✓ Guruh yaratish'); }
+    });
+});
+
+function showResult(type, msg) {
+    $('#result').html('<div class="alert alert-' + (type === 'success' ? 'success' : 'error') + '">' + msg + '</div>');
+    $('html,body').animate({ scrollTop: Math.max(0, $('#result').offset().top - 100) }, 300);
+    if (type === 'success') setTimeout(function() { $('#result').fadeOut(1500, function() { $(this).empty().show(); }); }, 3000);
+}
+
+function resetForm() {
+    currentImageFile = null;
+    selectedCargos.clear(); allCargos = [];
+    stopCamera();
+    $('#fileInput').val('');
+    $('#filePreview, #cameraPreview, #selectedImagePreview').empty();
+    $('#currentImageDisplay').hide();
+    $('#userSelect').val(null).trigger('change');
+    $('#totalWeightInput, #totalPriceInput').val(0);
+    $('#totalWeightDisplay, #totalPriceDisplay').text(0);
+    $('#newTrackCodesInput').val('');
+    updateSelectedDisplay();
+}
+
+// ===== GURUHLAR =====
+function loadGroups() {
+    $.get('/admin/warehouse/arrivedgroup/api/groups/', function(data) {
+        allGroups = data; renderGroups(data);
+    });
+}
+
+var STATUS_CLASS = {
+    "To'lov kutilmoqda": 'badge-warning',
+    'Tasdiqlash jarayonida': 'badge-info',
+    "To'lov tasdiqlandi": 'badge-success',
+    "To'lov rad etildi": 'badge-danger',
+    'Topshirildi': 'badge-secondary'
+};
+
+function renderGroups(groups) {
+    var tb = $('#groupsList').empty();
+    if (!groups || groups.length === 0) {
+        tb.html('<tr><td colspan="11" class="empty-state">Guruhlar yo\'q</td></tr>'); return;
+    }
+    groups.forEach(function(g) {
+        var sc = STATUS_CLASS[g.payment_status] || 'badge-secondary';
+        tb.append(
+            '<tr>' +
+            '<td>' + g.id + '</td>' +
+            '<td><strong>' + g.receipt_code + '</strong></td>' +
+            '<td>' + g.user_name + '<br><small style="color:#64748b;">🆔 ' + (g.user_id || '') + ' | 📞 ' + (g.user_phone || '') + '</small></td>' +
+            '<td>' + (g.image ? '<img src="' + g.image + '" style="width:40px;height:40px;object-fit:cover;border-radius:8px;">' : '—') + '</td>' +
+            '<td>' + parseFloat(g.total_weight).toFixed(2) + ' kg</td>' +
+            '<td>$' + parseFloat(g.total_price).toFixed(2) + '</td>' +
+            '<td><span class="badge ' + sc + '">' + g.payment_status + '</span></td>' +
+            '<td>' + (g.delivery_method || '—') + '</td>' +
+            '<td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + (g.delivery_address || '—') + '</td>' +
+            '<td style="white-space:nowrap;">' + g.created_at_display + '</td>' +
+            '<td style="white-space:nowrap;">' +
+            '<button class="btn btn-sm btn-primary" style="margin:2px;" onclick="openAddModal(' + g.id + ',\'' + g.receipt_code + '\')">➕ Yuk</button>' +
+            '<button class="btn btn-sm btn-warning" style="margin:2px;" onclick="showGroupReceipt(' + g.id + ')">🖨️ Chek</button>' +
+            '<a href="/admin/warehouse/arrivedgroup/' + g.id + '/change/" target="_blank" class="btn btn-sm btn-secondary" style="margin:2px;">✏️</a>' +
+            '</td></tr>'
+        );
+    });
+}
+
+function filterGroups() {
+    var fq = $('#groupSearchFlight').val().toLowerCase();
+    var uq = $('#groupSearchUser').val().toLowerCase();
+    renderGroups(allGroups.filter(function(g) {
+        return (!fq || g.receipt_code.toLowerCase().indexOf(fq) >= 0) &&
+               (!uq || g.user_name.toLowerCase().indexOf(uq) >= 0 ||
+                (g.user_id && g.user_id.toLowerCase().indexOf(uq) >= 0) ||
+                (g.user_phone && g.user_phone.indexOf(uq) >= 0));
+    }));
+}
+
+function clearGroupSearch() {
+    $('#groupSearchFlight, #groupSearchUser').val('');
+    renderGroups(allGroups);
+}
+
+$('#groupSearchFlight, #groupSearchUser').on('keyup', filterGroups);
+
+// ===== GURUHGA YUK QO'SHISH =====
+function openAddModal(id, code) {
+    currentGroupId = id;
+    $('#modalGroupCode').text(code);
+    $('#trackCodesInput').val('');
+    $('#addCargoResult').empty();
+    openModal('addCargoModal');
+}
+
+function submitAddCargos() {
+    var raw = $('#trackCodesInput').val().trim();
+    if (!raw) { $('#addCargoResult').html('<div class="alert alert-error">Trek kodlarni kiriting</div>'); return; }
+    var codes = raw.split('\n').map(function(t) { return t.trim(); }).filter(function(t) { return t.length > 0; });
+    $.ajax({
+        url: '/admin/warehouse/arrivedgroup/api/group/' + currentGroupId + '/add-cargos/',
+        type: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ track_codes: codes }),
+        success: function(res) {
+            $('#addCargoResult').html('<div class="alert alert-success">' + res.message + '</div>');
+            loadGroups();
+            setTimeout(function() { closeModal('addCargoModal'); }, 2000);
+        },
+        error: function(e) {
+            var msg = (e.responseJSON && e.responseJSON.error) ? e.responseJSON.error : 'Xatolik';
+            $('#addCargoResult').html('<div class="alert alert-error">' + msg + '</div>');
+        }
+    });
+}
+
+// ===== CHEK =====
+function openReceipt(data) {
+    $('#rcFlight').text(data.receipt_code || '—');
+    $('#rcUserName').text(data.user_name || '—');
+    $('#rcUserId').text(data.user_id || '—');
+    $('#rcCount').text((data.cargo_count || 0) + ' ta');
+    $('#rcWeight').text(parseFloat(data.total_weight || 0).toFixed(2) + ' kg');
+    $('#rcPrice').text('$' + parseFloat(data.total_price || 0).toFixed(2));
+    $('#rcDate').text(new Date().toLocaleString('uz-UZ'));
+    $('#qrCodeBox').empty();
+    try {
+        new QRCode(document.getElementById('qrCodeBox'), {
+            text: data.receipt_code || 'UTS',
+            width: 120, height: 120,
+            colorDark: '#0f172a', colorLight: '#ffffff'
+        });
+    } catch(e) {}
+    openModal('receiptModal');
+}
+
+function showGroupReceipt(groupId) {
+    $.get('/admin/warehouse/arrivedgroup/api/group/' + groupId + '/', function(g) {
+        openReceipt({
+            receipt_code: g.receipt_code,
+            user_name: g.user_name,
+            user_id: g.id,
+            cargo_count: g.cargos ? g.cargos.length : 0,
+            total_weight: g.total_weight,
+            total_price: g.total_price
+        });
+    });
+}
+
+function downloadReceipt() {
+    html2canvas(document.getElementById('receiptPrintArea'), { scale: 2, useCORS: true }).then(function(canvas) {
+        var a = document.createElement('a');
+        a.download = 'chek_' + $('#rcFlight').text() + '.png';
+        a.href = canvas.toDataURL('image/png');
+        a.click();
+    });
+}
+
+// ===== MODAL =====
+function openModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('active');
+}
+
+function closeModal(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+}
+
+document.querySelectorAll('.pg-modal-overlay').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+        if (e.target === el) el.classList.remove('active');
+    });
+});
+
+// ===== INIT =====
+loadGroups();
+updateSelectedDisplay();
+$(window).on('beforeunload', function() { stopCamera(); });
 </script>
 {% endblock %}

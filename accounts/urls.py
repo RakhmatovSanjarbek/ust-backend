@@ -10,7 +10,7 @@ from .views import (
     update_user_profile,
     delete_account,
     manage_relatives,
-    delete_relative
+    delete_relative, update_fcm_token
 )
 
 urlpatterns = [
@@ -24,4 +24,5 @@ urlpatterns = [
     path('relatives/', manage_relatives),
     path('relatives/<int:pk>/', delete_relative),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('update-fcm-token/', update_fcm_token),
 ]

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - UTS</title>
+    <style>
+        :root { --main: #024837; --bg: #f4f7f6; --glass: rgba(255, 255, 255, 0.9); }
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: #333; margin: 0; line-height: 1.7; }
+        .nav { background: var(--main); padding: 15px 0; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav button { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 8px 20px; cursor: pointer; border-radius: 20px; margin: 0 8px; transition: 0.3s; font-weight: 500; }
+        .nav button:hover { background: white; color: var(--main); }
+        .container { max-width: 900px; margin: 40px auto; background: var(--glass); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.3); }
+        .lang-section { display: none; }
+        .active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: var(--main); font-size: 28px; border-bottom: 3px solid var(--main); padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: var(--main); font-size: 20px; margin-top: 35px; display: flex; align-items: center; }
+        h2::before { content: "•"; margin-right: 10px; color: var(--main); font-size: 30px; }
+        p, li { font-size: 16px; color: #444; text-align: justify; }
+        ul { padding-left: 20px; }
+        .footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="nav">
+    <button onclick="setLang('uz')">O'zbekcha</button>
+    <button onclick="setLang('ru')">Русский</button>
+    <button onclick="setLang('en')">English</button>
+</div>
+
+<div class="container">
+    <div id="uz" class="lang-section active">
+        <h1>Maxfiylik Siyosati</h1>
+        <p><i>Oxirgi yangilanish: 2026-yil 7-aprel</i></p>
+        <p>Ushbu Maxfiylik siyosati "MCHJ SADIKO EXPRESS" (keyingi o‘rinlarda "Kompaniya") tomonidan taqdim etilgan "UTS" mobil ilovasi foydalanuvchilarining shaxsiy ma’lumotlarini to‘plash, saqlash va himoya qilish tartibini belgilaydi.</p>
+
+        <h2>1. To‘planadigan ma’lumotlar</h2>
+        <ul>
+            <li><b>Identifikatsiya ma’lumotlari:</b> Ism, familiya va pasport ma’lumotlari (bojxona rasmiylashtiruvi uchun).</li>
+            <li><b>Aloqa ma’lumotlari:</b> Telefon raqami (SMS kod orqali tasdiqlash uchun) va yetkazib berish manzili.</li>
+            <li><b>Logistika va operatsiyalar:</b> Yuklarning trek-kodlari, og‘irligi, statusi, to‘lovlar tarixi va yukni qabul qilib olish usuli.</li>
+            <li><b>Texnik ma’lumotlar:</b> Qurilma identifikatorlari, IP-manzil va ilovadan foydalanish statistikasi.</li>
+        </ul>
+
+        <h2>2. Ma’lumotlardan foydalanish maqsadlari</h2>
+        <p>Biz ma’lumotlarni quyidagi maqsadlarda qayta ishlaymiz:</p>
+        <ul>
+            <li>Foydalanuvchini SMS-avtorizatsiya orqali xavfsiz ro‘yxatdan o‘tkazish.</li>
+            <li>Xalqaro yuk tashish xizmatlarini ko‘rsatish va bojxona hujjatlarini rasmiylashtirish.</li>
+            <li>Yuk holati (statusi) haqida real vaqt rejimida ma’lumot berish.</li>
+            <li>To‘lovlarni qabul qilish va yukni topshirish jarayonini boshqarish.</li>
+        </ul>
+
+        <h2>3. Ma’lumotlarni saqlash va xavfsizlik</h2>
+        <p>Barcha ma’lumotlar xavfsiz PostgreSQL ma’lumotlar bazasida shifrlangan holda saqlanadi. Biz shaxsiy ma’lumotlarni uchinchi shaxslarga sotmaymiz. Ma’lumotlar faqat qonunchilikda belgilangan hollarda yoki logistika jarayonini (masalan, bojxona) yakunlash uchun zarur bo‘lganda taqdim etiladi.</p>
+
+        <h2>4. Foydalanuvchi huquqlari</h2>
+        <p>Foydalanuvchi o‘z ma’lumotlarini ko‘rish, tahrirlash va hisobini o‘chirish huquqiga ega. Hisob o‘chirilganda, barcha shaxsiy ma’lumotlar tizimdan butunlay yo‘q qilinadi.</p>
+    </div>
+
+    <div id="ru" class="lang-section">
+        <h1>Политика конфиденциальности</h1>
+        <p><i>Последнее обновление: 7 апреля 2026 г.</i></p>
+        <p>Настоящая политика определяет порядок сбора и защиты персональных данных пользователей приложения "UTS", предоставляемого ООО "SADIKO EXPRESS".</p>
+
+        <h2>1. Сбор информации</h2>
+        <ul>
+            <li><b>Идентификационные данные:</b> Имя, фамилия и паспортные данные (для таможенного оформления).</li>
+            <li><b>Контактная информация:</b> Номер телефона (для подтверждения через SMS-код) и адрес доставки.</li>
+            <li><b>Логистика и операции:</b> Трек-коды грузов, их вес, статус, история платежей и способ получения груза.</li>
+            <li><b>Технические данные:</b> Идентификаторы устройства, IP-адрес и статистика использования приложения.</li>
+        </ul>
+
+        <h2>2. Цели использования данных</h2>
+        <ul>
+            <li>Безопасная регистрация пользователя через SMS-авторизацию.</li>
+            <li>Оказание услуг международной перевозки и оформление таможенных документов.</li>
+            <li>Предоставление информации о статусе груза в режиме реального времени.</li>
+            <li>Управление платежами и процессом выдачи грузов.</li>
+        </ul>
+
+        <h2>3. Защита и хранение данных</h2>
+        <p>Данные хранятся в зашифрованном виде в базе данных PostgreSQL. Мы не продаем ваши данные третьим лицам. Доступ к данным предоставляется только в случаях, предусмотренных законодательством или необходимых для завершения процесса доставки.</p>
+
+        <h2>4. Права пользователя</h2>
+        <p>Пользователь имеет право просматривать, редактировать и удалять свой аккаунт. При удалении аккаунта все персональные данные безвозвратно удаляются из системы.</p>
+    </div>
+
+    <div id="en" class="lang-section">
+        <h1>Privacy Policy</h1>
+        <p><i>Last Updated: April 7, 2026</i></p>
+        <p>This Privacy Policy governs the collection, storage, and protection of personal data for the "UTS" mobile application provided by "SADIKO EXPRESS LLC".</p>
+
+        <h2>1. Information Collection</h2>
+        <ul>
+            <li><b>Identification Data:</b> First name, last name, and passport details (required for customs clearance).</li>
+            <li><b>Contact Information:</b> Phone number (for SMS code verification) and delivery address.</li>
+            <li><b>Logistics & Operations:</b> Tracking codes, cargo weight, status updates, payment history, and delivery preferences.</li>
+            <li><b>Technical Data:</b> Device identifiers, IP address, and app usage statistics.</li>
+        </ul>
+
+        <h2>2. Purpose of Data Processing</h2>
+        <ul>
+            <li>Secure user registration via SMS authorization.</li>
+            <li>Providing international shipping services and handling customs documentation.</li>
+            <li>Providing real-time updates on cargo status.</li>
+            <li>Managing payments and coordinating cargo pickup/delivery.</li>
+        </ul>
+
+        <h2>3. Data Security and Storage</h2>
+        <p>All data is stored in an encrypted PostgreSQL database. We do not sell user data to third parties. Data is shared only when required by law or necessary for the logistics process (e.g., customs authorities).</p>
+
+        <h2>4. User Rights</h2>
+        <p>Users have the right to access, edit, and delete their accounts. Upon account deletion, all personal data will be permanently removed from our systems.</p>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 UTS | MCHJ SADIKO EXPRESS | Barcha huquqlar himoyalangan.
+    </div>
+</div>
+
+<script>
+    function setLang(lang) {
+        document.querySelectorAll('.lang-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(lang).classList.add('active');
+        window.scrollTo(0, 0);
+    }
+</script>
+</body>
+</html>
