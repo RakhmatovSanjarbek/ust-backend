@@ -6,7 +6,7 @@ from django.template.response import TemplateResponse
 from django.utils.html import format_html
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
+from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings, AppVersion
 from accounts.models import User
 
 
@@ -129,3 +129,11 @@ class WarehouseSettingsAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return not WarehouseSettings.objects.exists()
+
+
+@admin.register(AppVersion)
+class AppVersionAdmin(admin.ModelAdmin):
+    list_display = ('version', 'is_force_update', 'play_store_url', 'app_store_url', 'updated_at')
+
+    def has_add_permission(self, request):
+        return not AppVersion.objects.exists()

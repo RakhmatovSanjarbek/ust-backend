@@ -77,3 +77,18 @@ class WarehouseSettings(models.Model):
     class Meta:
         verbose_name = "Ombor va Kontakt"
         verbose_name_plural = "Ombor va Kontak"
+
+class AppVersion(models.Model):
+    version = models.CharField(max_length=20, verbose_name="Versiya (masalan: 1.0.3)")
+    play_store_url = models.URLField(verbose_name="Play Store havolasi")
+    app_store_url = models.URLField(verbose_name="App Store havolasi")
+    is_force_update = models.BooleanField(default=True, verbose_name="Majburiy yangilanish")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Ilova versiyasi"
+        verbose_name_plural = "Ilova versiyasi"
+
+    def __str__(self):
+        return f"v{self.version}"

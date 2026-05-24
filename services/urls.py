@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import get_warehouse_info
+from .views import get_warehouse_info, check_app_version
 from django.urls import path, include
 
 urlpatterns = [
@@ -9,4 +9,5 @@ urlpatterns = [
     path('videos/', views.VideoListView.as_view(), name='video_list'),
     path('calculator/', views.CalculationCreateListView.as_view(), name='calculator'),
     path('services-info/', get_warehouse_info, name='services-info'),
+    path('app-version/', check_app_version, name='app-version'),
 ]

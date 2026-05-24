@@ -183,6 +183,8 @@ JAZZMIN_SETTINGS = {
         "services.SupportMessage": "fas fa-comments",
         "services.TutorialVideo": "fa-solid fa-video",
         "services.CalculationRequest": "fa-solid fa-calculator",
+        "services.WarehouseSettings": "fas fa-warehouse",
+        "services.AppVersion": "fas fa-mobile-alt",
         "warehouse.ArrivedGroup": "fa-solid fa-layer-group",
         "warehouse.PaymentRequest": "fa-solid fa-credit-card",
         "warehouse.DeliveryQueue": "fa-solid fa-cart-flatbed",

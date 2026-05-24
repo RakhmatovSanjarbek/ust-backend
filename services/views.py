@@ -3,9 +3,9 @@ from rest_framework.decorators import api_view, permission_classes, parser_class
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
-from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
+from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings, AppVersion
 from .serializers import SupportMessageSerializer, TutorialVideoSerializer, CalculationRequestSerializer, \
-    WarehouseSettingsSerializer
+    WarehouseSettingsSerializer, AppVersionSerializer
 
 
 # --- SUPPORT CHAT VIEW ---
@@ -63,3 +63,13 @@ class CalculationCreateListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         # So'rovni saqlayotganda joriy foydalanuvchini biriktiramiz
         serializer.save(user=self.request.user)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.AllowAny])
+def check_app_version(request):
+    version = AppVersion.objects.last()
+    if not version:
+        return Response({"error": "Versiya topilmadi"}, status=404)
+    serializer = AppVersionSerializer(version)
+    return Response(serializer.data)

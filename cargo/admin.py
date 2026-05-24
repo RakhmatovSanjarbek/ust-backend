@@ -14,20 +14,13 @@ from utils.push_service import send_flight_status_push, send_cargo_status_push
 
 # --- Transport turini aniqlash ---
 def get_transport_type_from_id(id_value):
-    """
-    ID formatlar: A-0102, A0102, A 0102       → AVIA
-                  UT-0102, UT0102, UT 0102     → AVTO
-                  UTS-0102, UTS0102, UTS 0102  → AVTO
-    UT/UTS ni A dan OLDIN tekshiramiz — chunki UTS ichida ham A harfi bor
-    """
     if not id_value:
         return None
-    # Bo'shliq va defislarni olib tashlaymiz
     clean = re.sub(r'[\s\-]', '', str(id_value).strip().upper())
-    if clean.startswith('UTS') or clean.startswith('UT'):
-        return 'AVTO'
-    elif clean.startswith('A') and re.match(r'^A\d', clean):
+    if clean.startswith('US') and re.match(r'^US\d', clean):
         return 'AVIA'
+    elif clean.startswith('GG') and re.match(r'^GG\d', clean):
+        return 'AVTO'
     return None
 
 
@@ -90,9 +83,8 @@ class CargoResource(resources.ModelResource):
         patterns = []
         for n in [num, num_padded]:
             patterns.extend([
-                f"UTS-{n}", f"UTS{n}", f"UTS {n}",
-                f"UT-{n}",  f"UT{n}",  f"UT {n}",
-                f"A-{n}",   f"A{n}",   f"A {n}",
+                f"US-{n}", f"US{n}", f"US {n}",
+                f"GG-{n}", f"GG{n}", f"GG {n}",
             ])
 
         # Duplikatlarni olib tashlaymiz (num == num_padded bo'lishi mumkin)
@@ -278,11 +270,11 @@ class BaseCargoAdmin(ImportExportModelAdmin):
     def get_transport_badge(self, obj):
         if obj.user and obj.user.user_id:
             user_id = obj.user.user_id.upper()
-            if 'UT' in user_id:
-                return format_html('<span style="background-color: #3498db; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">✈️ AVIA</span>')
-            elif 'A' in user_id:
-                return format_html('<span style="background-color: #e67e22; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">🚚 AVTO</span>')
-        return format_html('<span style="background-color: #95a5a6; color: white; padding: 3px 10px; border-radius: 12px; font-size: 11px;">❓ ANIQLANMAGAN</span>')
+            if 'US' in user_id:
+                return format_html('<span style="...">✈️ AVIA</span>')
+            elif 'GG' in user_id:
+                return format_html('<span style="...">🚚 AVTO</span>')
+        return format_html('<span style="...">❓ ANIQLANMAGAN</span>')
     get_transport_badge.short_description = "Transport"
 
     def colored_status(self, obj):

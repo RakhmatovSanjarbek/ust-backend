@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from accounts.models import User
-from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings
+from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings, AppVersion
 
 
 class SupportMessageSerializer(serializers.ModelSerializer):
@@ -69,3 +69,8 @@ class WarehouseSettingsSerializer(serializers.ModelSerializer):
                 "phone": instance.contact_phone
             }
         }
+
+class AppVersionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppVersion
+        fields = ['version', 'play_store_url', 'app_store_url', 'is_force_update']
