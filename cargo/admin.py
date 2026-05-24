@@ -46,10 +46,10 @@ class CargoResource(resources.ModelResource):
     class Meta:
         model = Cargo
         import_id_fields = ()
-        fields = ('track_code', 'flight_name', 'created_at', 'status', 'user')
+        fields = ('track_code', 'flight_name', 'created_at', 'status', 'user', 'transport_type')
         skip_unchanged = True
         report_skipped = True
-        export_order = ('track_code', 'flight_name', 'created_at', 'status', 'user')
+        export_order = ('track_code', 'flight_name', 'created_at', 'status', 'user', 'transport_type')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,6 +145,7 @@ class CargoResource(resources.ModelResource):
             row['track_code'] = track_code
             row['flight_name'] = flight_name
             row['created_at'] = created_at
+            row['transport_type'] = transport_type
 
             if user:
                 row['user'] = user.pk
@@ -233,6 +234,8 @@ class CargoResource(resources.ModelResource):
         """)
 
 
+
+
 # --- Asosiy Admin klassi ---
 class BaseCargoAdmin(ImportExportModelAdmin):
     resource_class = CargoResource
@@ -268,13 +271,20 @@ class BaseCargoAdmin(ImportExportModelAdmin):
     display_user_info.short_description = "Foydalanuvchi"
 
     def get_transport_badge(self, obj):
-        if obj.user and obj.user.user_id:
-            user_id = obj.user.user_id.upper()
-            if 'US' in user_id:
-                return format_html('<span style="...">✈️ AVIA</span>')
-            elif 'GG' in user_id:
-                return format_html('<span style="...">🚚 AVTO</span>')
-        return format_html('<span style="...">❓ ANIQLANMAGAN</span>')
+        if obj.transport_type == 'AVIA':
+            return format_html(
+                '<span style="background-color: #3498db; color: white; '
+                'padding: 3px 10px; border-radius: 12px; font-size: 11px;">✈️ AVIA</span>'
+            )
+        elif obj.transport_type == 'AVTO':
+            return format_html(
+                '<span style="background-color: #e67e22; color: white; '
+                'padding: 3px 10px; border-radius: 12px; font-size: 11px;">🚚 AVTO</span>'
+            )
+        return format_html(
+            '<span style="background-color: #95a5a6; color: white; '
+            'padding: 3px 10px; border-radius: 12px; font-size: 11px;">❓ ANIQLANMAGAN</span>'
+        )
     get_transport_badge.short_description = "Transport"
 
     def colored_status(self, obj):

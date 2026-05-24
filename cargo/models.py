@@ -7,6 +7,19 @@ from django.utils import timezone
 
 
 class Cargo(models.Model):
+    TRANSPORT_CHOICES = [
+        ('AVIA', 'AVIA'),
+        ('AVTO', 'AVTO'),
+    ]
+
+    # mavjud fieldlar...
+    transport_type = models.CharField(
+        max_length=10,
+        choices=TRANSPORT_CHOICES,
+        null=True, blank=True,
+        verbose_name="Transport turi"
+    )
+
     STATUS_CHOICES = [
         ('Kutilmoqda', 'Kutilmoqda'),
         ('Omborda', 'Omborda'),
