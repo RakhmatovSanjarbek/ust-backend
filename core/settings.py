@@ -26,7 +26,7 @@ FIREBASE_CREDENTIALS_PATH = BASE_DIR / 'utils' / 'firebase_credentials.json'
 CSRF_TRUSTED_ORIGINS = [
     'http://46.8.176.172',
     'http://10.0.2.2:8000',
-    'http://127.0.0.1:8000'
+    'http://127.0.0.1:8000',
     'http://utsgroup.uz',
     'https://utsgroup.uz',
 ]
@@ -51,12 +51,10 @@ INSTALLED_APPS = [
     'notifications',
     'unassigned',
     'flights',
-    'whitenoise.runserver_nostatic',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -153,10 +151,9 @@ JAZZMIN_SETTINGS = {
     "site_title": "UTS Cargo",
     "site_header": "UTS Cargo",
     "site_brand": "UTS Admin",
-    "site_logo": "images/logo.png",
+    "site_logo": "images/app_logo.png",
     "login_logo": "images/logo.png",
-    "site_icon": "images/logo.png",
-    "site_logo_classes": "img-circle",
+    "site_icon": "images/app_logo.png",
     "welcome_sign": "UTS Cargo boshqaruv paneliga xush kelibsiz",
     "copyright": "UTS Cargo Ltd",
     "search_model": ["accounts.User", "cargo.Cargo"],
