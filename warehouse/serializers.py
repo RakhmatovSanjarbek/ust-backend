@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from cargo.serializers import CargoTrackListSerializer
-from .models import ArrivedGroup
+from warehouse.models import ArrivedGroup
+
 
 class ArrivedGroupListSerializer(serializers.ModelSerializer):
     cargos = CargoTrackListSerializer(many=True, read_only=True)

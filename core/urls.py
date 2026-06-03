@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls')),
     path('api/unassigned/', include('unassigned.urls')),
     path('api/flights/', include('flights.urls')),
+    path('api/admin/', include('admin_api.urls')),
 ]
 
 if settings.DEBUG:

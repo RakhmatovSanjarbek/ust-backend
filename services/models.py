@@ -74,9 +74,19 @@ class WarehouseSettings(models.Model):
     contact_instagram = models.CharField(max_length=255, verbose_name="Instagram link")
     contact_phone = models.CharField(max_length=255, verbose_name="Asosiy telefon")
 
+    dollar_rate = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        default=12700, verbose_name="Dollar kursi (so'm)"
+    )
+    dollar_rate_updated_at = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name="Kurs oxirgi yangilangan vaqt"
+    )
+
     class Meta:
         verbose_name = "Ombor va Kontakt"
         verbose_name_plural = "Ombor va Kontak"
+
 
 class AppVersion(models.Model):
     version = models.CharField(max_length=20, verbose_name="Versiya (masalan: 1.0.3)")

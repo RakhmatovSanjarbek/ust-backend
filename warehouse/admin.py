@@ -9,9 +9,9 @@ from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.db import models
 from cargo.models import Cargo
-from warehouse.models import ArrivedGroup, PaymentRequest, DeliveryQueue
 from accounts.models import User
 from utils.push_service import send_flight_status_push
+from warehouse.models import ArrivedGroup, PaymentRequest, DeliveryQueue
 
 
 @admin.register(ArrivedGroup)
