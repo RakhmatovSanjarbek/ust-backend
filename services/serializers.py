@@ -78,19 +78,29 @@ class WarehouseSettingsSerializer(serializers.ModelSerializer):
                 "phone": instance.china_avia_phone,
                 "address": instance.china_avia_address,
                 "price": instance.china_avia_price,
-                "term": instance.china_avia_term
+                "term": instance.china_avia_term,
             },
             "Xitoy_AVTO": {
                 "phone": instance.china_auto_phone,
                 "address": instance.china_auto_address,
                 "price": instance.china_auto_price,
-                "term": instance.china_auto_term
+                "term": instance.china_auto_term,
             },
             "contact": {
                 "telegram": instance.contact_telegram,
                 "instagram": instance.contact_instagram,
-                "phone": instance.contact_phone
-            }
+                "phone": instance.contact_phone,
+            },
+            "dollar_rate": instance.dollar_rate,
+            "payment_card": {
+                "number": instance.payment_card_number,
+                "holder": instance.payment_card_holder,
+            },
+            "pickup": {
+                "name": instance.pickup_name,
+                "lat": instance.pickup_lat,
+                "lng": instance.pickup_lng,
+            },
         }
 
 

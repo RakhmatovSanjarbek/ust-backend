@@ -85,6 +85,11 @@ class WarehouseSettings(models.Model):
     contact_phone = models.CharField(max_length=255, verbose_name="Asosiy telefon")
     dollar_rate = models.DecimalField(max_digits=10, decimal_places=2, default=12700, verbose_name="Dollar kursi (so'm)")
     dollar_rate_updated_at = models.DateTimeField(null=True, blank=True, verbose_name="Kurs oxirgi yangilangan vaqt")
+    payment_card_number = models.CharField(max_length=50, default="0000 0000 0000 0000", verbose_name="To'lov karta raqami")
+    payment_card_holder = models.CharField(max_length=255, default="Karta egasi", verbose_name="Karta egasining ismi")
+    pickup_name = models.CharField(max_length=255, default="Olib ketish punkti", verbose_name="Olib ketish punkti nomi")
+    pickup_lat = models.FloatField(default=41.334485, verbose_name="Koordinata (Latitude)")
+    pickup_lng = models.FloatField(default=69.214603, verbose_name="Koordinata (Longitude)")
 
     class Meta:
         verbose_name = "Ombor va Kontakt"
