@@ -1,39 +1,58 @@
+import os
+import uuid
 from rest_framework import serializers
 from accounts.models import User
 from .models import SupportMessage, TutorialVideo, CalculationRequest, WarehouseSettings, AppVersion
 
+ALLOWED_MIME = {
+    'image/jpeg', 'image/jpg', 'image/png', 'image/webp',
+    'image/heic', 'image/heif', 'application/octet-stream',
+}
+ALLOWED_EXT = {'.jpg', '.jpeg', '.png', '.webp', '.heic', '.heif'}
+
+
+def _safe_image(file_obj):
+    if file_obj is None:
+        return None
+    content_type = (getattr(file_obj, 'content_type', '') or '').lower()
+    name = getattr(file_obj, 'name', '') or ''
+    ext = os.path.splitext(name)[1].lower()
+    if content_type not in ALLOWED_MIME and ext not in ALLOWED_EXT:
+        raise serializers.ValidationError("Faqat rasm fayllari qabul qilinadi.")
+    file_obj.name = f"{uuid.uuid4()}{ext if ext else '.jpg'}"
+    return file_obj
+
 
 class SupportMessageSerializer(serializers.ModelSerializer):
     sender_type = serializers.SerializerMethodField()
-    # Foydalanuvchini avtomatik aniqlash uchun PrimaryKeyRelatedField ishlatamiz
     user = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(),
-        required=False,
-        allow_null=True
+        queryset=User.objects.all(), required=False, allow_null=True
     )
 
     class Meta:
         model = SupportMessage
         fields = ['id', 'user', 'message', 'image', 'is_from_admin', 'sender_type', 'timestamp_ms']
-        extra_kwargs = {
-            'user': {'required': False, 'allow_null': True}
-        }
+        extra_kwargs = {'user': {'required': False, 'allow_null': True}}
 
     @staticmethod
     def get_sender_type(obj):
         return "Admin" if obj.is_from_admin else "Client"
 
+    def validate_image(self, value):
+        return _safe_image(value)
+
     def create(self, validated_data):
-        # Agar xabar yuborilayotganda user berilmasa, request'dagi user'ni olamiz
         request = self.context.get('request')
         if request and request.user and not validated_data.get('user'):
             validated_data['user'] = request.user
         return super().create(validated_data)
 
+
 class TutorialVideoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TutorialVideo
         fields = ['id', 'video_url', 'created_at']
+
 
 class CalculationRequestSerializer(serializers.ModelSerializer):
     class Meta:
@@ -43,6 +62,10 @@ class CalculationRequestSerializer(serializers.ModelSerializer):
             'comment', 'price', 'admin_note', 'is_responded', 'created_at'
         ]
         read_only_fields = ['price', 'admin_note', 'is_responded']
+
+    def validate_image(self, value):
+        return _safe_image(value)
+
 
 class WarehouseSettingsSerializer(serializers.ModelSerializer):
     class Meta:
@@ -69,6 +92,7 @@ class WarehouseSettingsSerializer(serializers.ModelSerializer):
                 "phone": instance.contact_phone
             }
         }
+
 
 class AppVersionSerializer(serializers.ModelSerializer):
     class Meta:
