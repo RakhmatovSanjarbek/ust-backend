@@ -3,7 +3,7 @@ from django.core.management.base import BaseCommand
 from django.db import connections
 from django.utils import timezone
 from accounts.models import User
-from warehouse.models import Cargo  # Cargo qaysi appdaligiga qarab importni tekshiring
+from cargo.models import Cargo  # To'g'rilangan import
 
 
 class Command(BaseCommand):
@@ -12,12 +12,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(self.style.WARNING("Migratsiya boshlanmoqda..."))
 
-        # 1. Eski bazaga ulanish (Buning uchun settings.py da 'old_bot' degan havola bo'lishi kerak)
-        # Yoki eski jadvallarni vaqtincha hozirgi PostgreSQL bazangizga import qilgan bo'lsangiz 'default' deb qoldiring
         db_conn = connections['default']
 
         with db_conn.cursor() as cursor:
-            # 2. Eski Customers va TelegramUsers jadvallarini birlashtirib o'qiymiz
             self.stdout.write("Foydalanuvchilarni o'qish...")
             cursor.execute("""
                 SELECT 
@@ -27,12 +24,16 @@ class Command(BaseCommand):
             """)
             old_customers = cursor.fetchall()
 
-            customer_mapping = {}  # Eski Customer ID -> UTS User obyekti
+            customer_mapping = {}
 
             for row in old_customers:
                 old_id, first_name, last_name, phone, telegram_id = row
 
-                # Telefon raqam formatini to'g'rilash (+ belgisini olib tashlash yoki qo'shish)
+                # QO'SHILDI: Agar telefon raqam bo'sh bo'lsa, uni tashlab ketamiz (Skip)
+                if not phone or not phone.strip():
+                    continue
+
+                # Telefon raqam formatini to'g'rilash
                 clean_phone = phone.strip().replace(" ", "")
                 if not clean_phone.startswith('+') and clean_phone.isdigit():
                     clean_phone = f"+{clean_phone}"
@@ -41,13 +42,11 @@ class Command(BaseCommand):
                 user = User.objects.filter(phone=clean_phone).first()
 
                 if not user:
-                    # Agar foydalanuvchi yangi ilovada hali yo'q bo'lsa, uni yaratamiz
-                    # user_id sifatida telegram_id yoki tasodifiy raqam beramiz
                     u_id = f"TG{telegram_id}" if telegram_id else f"OLD{old_id}"
 
                     user = User.objects.create_user(
                         phone=clean_phone,
-                        password=None,  # Parolsiz, ilovaga kirganda OTP bilan kiradi
+                        password=None,
                         first_name=first_name or "Klient",
                         last_name=last_name or "Eski",
                         user_id=u_id,
@@ -60,7 +59,7 @@ class Command(BaseCommand):
 
                 customer_mapping[old_id] = user
 
-            # 3. Eski yuklarni (Goods) o'qiymiz va Cargo modeliga o'tkazamiz
+            # 3. Eski yuklarni (Goods) o'qiymiz
             self.stdout.write("Yuklarni (Goods) ko'chirish boshlanmoqda...")
             cursor.execute("""
                 SELECT 
@@ -76,14 +75,10 @@ class Command(BaseCommand):
                 if not tracking_number:
                     continue
 
-                # Bu yuk qaysi userga tegishli ekanligini topamiz
                 target_user = customer_mapping.get(cust_id)
 
-                # Eski statelarni UTS statuslariga o'giramiz (Masalan: Active bo'lsa Topshirildi yoki Ombor)
-                # Eski bazada "State" ustuni bor ekan, shunga qarab status beramiz
                 final_status = 'Topshirildi' if state == 'Active' else 'Omborda'
 
-                # Yuk UTS bazasida allaqachon bormi tekshiramiz (dublikat bo'lmasligi uchun)
                 if not Cargo.objects.filter(track_code=tracking_number).exists():
                     cargo = Cargo(
                         user=target_user,
@@ -93,7 +88,6 @@ class Command(BaseCommand):
                         weight=weight or 0.0,
                         created_at=arrived_date or timezone.now()
                     )
-                    # SIZNING MODELDAGI SIGNALNI O'CHIRISH BAYROG'I (Push ketmaydi)
                     cargo._skip_push_signal = True
                     cargo.save()
                     cargo_count += 1
