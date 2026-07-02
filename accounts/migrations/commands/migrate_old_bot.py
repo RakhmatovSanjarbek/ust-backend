@@ -58,18 +58,27 @@ class Command(BaseCommand):
                     else:
                         generated_user_id = f"UTS-{old_id}{random.randint(10, 99)}"
 
-                    # Ism sharif ketidan "tg bot" deb yozish
-                    f_name = f"{first_name} tg bot" if first_name else "Klient tg bot"
-                    l_name = last_name or "Eski"
+                    # Ism oxiriga "tg bot" qo'shish, familiyani to'g'rilash
+                    f_name = first_name.strip() if first_name else "Klient"
+                    if "Eski" in f_name:
+                        f_name = f_name.replace("Eski", "").strip()
+
+                    # Oxiriga "tg bot" qo'shimchasi
+                    if not f_name.endswith("tg bot"):
+                        f_name = f"{f_name} tg bot"
+
+                    l_name = last_name.strip() if last_name else ""
+                    if "Eski" in l_name:
+                        l_name = l_name.replace("Eski", "").strip()
 
                     try:
                         user = User.objects.create_user(
                             phone=clean_phone,
                             password=None,
                             first_name=f_name,
-                            last_name=l_name,
+                            last_name=l_name or "Mijoz",
                             user_id=generated_user_id,
-                            passport_series=passport_serial,  # Model ustun nomlarini tekshiring
+                            passport_series=passport_serial,  # Django model field nomi bilan bir xilligini tekshiring
                             jshshir=pinfl,
                             status='approved',
                             is_verified=True
@@ -81,12 +90,12 @@ class Command(BaseCommand):
                         continue
                 else:
                     self.stdout.write(f"Mavjud foydalanuvchi topildi: {clean_phone}")
-                    # Agar oldingi yurgizishdan user qolgan bo'lsa, ma'lumotlarini yangilaymiz
+                    # Mavjud foydalanuvchining ma'lumotlarini yangilash
                     if "tg bot" not in user.first_name:
                         user.first_name = f"{user.first_name} tg bot"
-                    if passport_serial:
+                    if passport_serial and not user.passport_series:
                         user.passport_series = passport_serial
-                    if pinfl:
+                    if pinfl and not user.jshshir:
                         user.jshshir = pinfl
                     user.save()
 
@@ -112,6 +121,7 @@ class Command(BaseCommand):
                 final_status = 'Topshirildi' if state == 'Active' else 'Omborda'
 
                 if not Cargo.objects.filter(track_code=tracking_number).exists():
+                    # Modelda 'weight' yo'qligi uchun argumentlardan olib tashlandi
                     cargo = Cargo(
                         user=target_user,
                         track_code=tracking_number,
