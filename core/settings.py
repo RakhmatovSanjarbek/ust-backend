@@ -17,8 +17,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['46.8.176.172', 'utsgroup.uz', 'www.utsgroup.uz', '127.0.0.1', 'localhost', '10.0.2.2',
                  '0.0.0.0']
 
-SESSION_COOKIE_AGE = 5 * 60  # 5 daqiqa
-SESSION_SAVE_EVERY_REQUEST = True  # Har so'rovda vaqt yangilanadi
+SESSION_COOKIE_AGE = 5 * 60
+SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
 FIREBASE_CREDENTIALS_PATH = BASE_DIR / 'utils' / 'firebase_credentials.json'
